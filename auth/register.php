@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SK 360 Register</title>
-    <link rel="stylesheet" href="register.css">
+    <link rel="stylesheet" href="../css/register.css">
 </head>
 <body>
     <div class="container">
         <div class="left">
-            <div class ="back"><a href="index.html"> Back to home</a></div>
+            <div class ="back"><a href="../index.php"> Back to home</a></div>
                 <h2>SK 360°</h2>
             <h3>Join SK 360°</h3>
             <p>Create your account to access the centralized platform for youth governance in Lipa City.</p>
@@ -26,7 +26,7 @@
             <hr>
             <div class="signin-link">
                 <p>Already have an account?</p>
-                <a href="login.html">🔑 Sign In Here</a>
+                <a href="login.php">🔑 Sign In Here</a>
             </div>
         </div>
         <div class="right">
@@ -70,7 +70,7 @@
                     </label>
                     <div class="btn-group">
                         <button type="button" class="back-btn" onclick="prevStep()">Back</button>
-                        <button type="button" onclick="location.href='login.html'">Create Account</button>
+                        <button type="button" onclick="location.href='login.php'">Create Account</button>
                     </div>
                 </form>
             </div>

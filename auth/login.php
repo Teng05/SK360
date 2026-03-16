@@ -3,13 +3,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SK 360° | Lipa City Youth Governance</title>
-    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
     <div class="container">
 
         <div class ="left-panel">
-            <div class ="back"><a href="index.html"> Back to home</a></div>
+            <div class ="back"><a href="../index.php"> Back to home</a></div>
             <h2 class ="logo">SK 360°</h2>
             <h1>Welcome Back!</h1>
             <p>Access your dashboard to manage reports, 
@@ -66,7 +66,7 @@
 
             <p class="register">
                 Don’t have an account?
-                <a href="register.html">Register here</a>
+                <a href="register.php">Register here</a>
             </p>
 
         </form>
