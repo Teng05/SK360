@@ -24,8 +24,8 @@
             <h2>Empowering the youth, transforming communities.</h2>
             <p>A centralized digital platform for transparent reporting, real-time communication, and coordinated engagement in Sangguniang Kabataan operations. Promoting efficiency, accountability, and seamless leadership transitions.</p>
             <div class="hero-buttons">
-                <button class ="btn-red" onclick="location.href='login.html'">Login</button>
-                <button class ="btn-white" onclick="location.href='register.html'">Register</button>
+                <button class ="btn-red" onclick="location.href='auth/login.php'">Login</button>
+                <button class ="btn-white" onclick="location.href='auth/register.php'">Register</button>
             </div>
         </div>
         <div class="nav-img">

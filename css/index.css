@@ -324,6 +324,6 @@ button:active { transform: scale(0.95); }
     font-size: 0.85rem;
 }
 
-/* --- Register Page --- */
+
 .legal-links { display: flex; gap: 15px; }
 .legal-links a { color: #9ca3af; text-decoration: none; }
