@@ -18,6 +18,7 @@
             </ul>
                 <a href="#home" class="btn-yellow">Get Started</a>
         </nav>
+        
         <div class="nav-content" id ="home">
             <div class="nav-text" >
             <h1>SK 360°</h1>
