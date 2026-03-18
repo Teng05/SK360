@@ -151,116 +151,15 @@ button:disabled { background-color: gray; cursor: not-allowed; }
         </form>
 
     </div>
-</div>
-
-<script>
-// Multi-step
-function nextStep(){
-    document.getElementById("info").classList.add("hidden");
-    document.getElementById("pass").classList.remove("hidden");
-}
-function prevStep(){
-    document.getElementById("pass").classList.add("hidden");
-    document.getElementById("info").classList.remove("hidden");
-}
-
-// Step 1 validation
-const step1Inputs = document.querySelectorAll('#info input, #info select');
-const step1Continue = document.getElementById('step1Continue');
-const step2Inputs = document.querySelectorAll('#pass input');
-const submitBtn = document.getElementById('submitBtn');
-
-function validateStep1(){
-    let valid = true;
-    step1Inputs.forEach(input => {
-        const msg = input.nextElementSibling;
-        if(!input.value.trim()){ msg.textContent = 'This field is required.'; input.classList.add('invalid'); input.classList.remove('valid'); valid=false; }
-        else{ msg.textContent=''; input.classList.add('valid'); input.classList.remove('invalid'); }
-
-        if(input.name==='email'){
-            const pattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if(!pattern.test(input.value.trim())){ msg.textContent='Invalid email address.'; input.classList.add('invalid'); input.classList.remove('valid'); valid=false; }
+    <script>
+        function nextStep(){
+            document.getElementById("info").classList.add("hidden");
+            document.getElementById("pass").classList.remove("hidden");
         }
-    });
-
-    // AJAX check email existence
-    const emailInput = document.querySelector('input[name="email"]');
-    if(emailInput.value.trim() !== ''){
-        fetch('check_email.php?email=' + encodeURIComponent(emailInput.value.trim()))
-        .then(res => res.json())
-        .then(data=>{
-            const msg=emailInput.nextElementSibling;
-            if(data.exists){ msg.textContent='Email already exists.'; emailInput.classList.add('invalid'); emailInput.classList.remove('valid'); step1Continue.disabled=true; }
-            else{ if(emailInput.classList.contains('invalid')){ msg.textContent=''; emailInput.classList.remove('invalid'); emailInput.classList.add('valid'); } step1Continue.disabled=!valid; }
-        });
-    } else { step1Continue.disabled=!valid; }
-
-    step1Continue.disabled=!valid;
-}
-
-// Step 2 validation
-function validateStep2(){
-    let valid = true;
-    const pw=document.querySelector('input[name="password"]').value;
-    const cpw=document.querySelector('input[name="confirm_password"]').value;
-    const pwField=document.querySelector('input[name="password"]');
-    const cpwField=document.querySelector('input[name="confirm_password"]');
-    const pwMsg=pwField.nextElementSibling;
-    const cpwMsg=cpwField.nextElementSibling;
-
-    const hasUpper=/[A-Z]/.test(pw);
-    const hasLower=/[a-z]/.test(pw);
-    const hasNumber=/[0-9]/.test(pw);
-
-    if(pw.length<8 || !hasUpper || !hasLower || !hasNumber){
-        pwMsg.textContent='Password must be 8+ chars with upper, lower, number.'; pwField.classList.add('invalid'); pwField.classList.remove('valid'); valid=false;
-    } else { pwMsg.textContent=''; pwField.classList.add('valid'); pwField.classList.remove('invalid'); }
-
-    if(pw!==cpw){ cpwMsg.textContent='Passwords do not match.'; cpwField.classList.add('invalid'); cpwField.classList.remove('valid'); valid=false; }
-    else if(pw!==''){ cpwMsg.textContent=''; cpwField.classList.add('valid'); cpwField.classList.remove('invalid'); }
-
-    submitBtn.disabled = !valid;
-}
-
-// Phone number live validation
-const phoneInput = document.querySelector('input[name="phone_number"]');
-phoneInput.addEventListener('input', () => {
-    const msg = phoneInput.nextElementSibling;
-    phoneInput.value = phoneInput.value.replace(/[^\d]/g, '');
-    
-    if(phoneInput.value.length < 10 || phoneInput.value.length > 11){
-        msg.textContent = 'Phone number must be 10–11 digits.';
-        phoneInput.classList.add('invalid'); 
-        phoneInput.classList.remove('valid');
-    } else {
-        msg.textContent = '';
-        phoneInput.classList.add('valid'); 
-        phoneInput.classList.remove('invalid');
-    }
-
-    validateStep1();
-});
-
-// Event listeners
-step1Inputs.forEach(i => i.addEventListener('input', validateStep1));
-step2Inputs.forEach(i => i.addEventListener('input', validateStep2));
-
-step1Continue.disabled=true;
-submitBtn.disabled=true;
-validateStep1();
-validateStep2();
-</script>
-
-<?php if($success_message): ?>
-<script>
-Swal.fire({
-    icon: 'success',
-    title: 'Success!',
-    text: '<?= addslashes($success_message) ?>',
-    confirmButtonText: 'OK'
-}).then(()=>{ window.location.href='login.php'; });
-</script>
-<?php endif; ?>
-
+        function prevStep(){
+            document.getElementById("pass").classList.add("hidden");
+            document.getElementById("info").classList.remove("hidden");
+        }
+    </script>
 </body>
 </html>
