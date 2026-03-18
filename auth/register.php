@@ -2,11 +2,16 @@
 require_once '../classes/database.php';
 session_start();
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require_once '../PHPMailer/src/PHPMailer.php';
+require_once '../PHPMailer/src/SMTP.php';
+require_once '../PHPMailer/src/Exception.php';
+
 $db = new Database();
 $errors = [];
-$success_message = "";
 
-// Handle POST registration
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $first_name   = trim($_POST['first_name'] ?? '');
     $last_name    = trim($_POST['last_name'] ?? '');
@@ -16,40 +21,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password     = $_POST['password'] ?? '';
     $confirm_pass = $_POST['confirm_password'] ?? '';
 
-    // Server-side validation
-    if (!$first_name || !$last_name || !$email || !$phone_number || !$barangay_id || !$password) {
+    if (!$first_name || !$last_name || !$email || !$phone_number || !$barangay_id || !$password || !$confirm_pass) {
         $errors[] = "All fields are required.";
     }
+
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email format.";
     }
+
     if ($password !== $confirm_pass) {
         $errors[] = "Passwords do not match.";
     }
-    if (strlen($password) < 8 || !preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password)) {
+
+    if (
+        strlen($password) < 8 ||
+        !preg_match('/[A-Z]/', $password) ||
+        !preg_match('/[a-z]/', $password) ||
+        !preg_match('/[0-9]/', $password)
+    ) {
         $errors[] = "Password must be at least 8 characters and include uppercase, lowercase, and a number.";
     }
+
     if (!preg_match('/^\d{10,11}$/', $phone_number)) {
         $errors[] = "Phone number must be 10–11 digits.";
     }
 
-    // Check duplicate email using database method
     if ($db->emailExists($email)) {
         $errors[] = "Email is already registered.";
     }
 
-    // Register user
     if (empty($errors)) {
-        $verification_code = $db->registerYouth($first_name, $last_name, $email, $phone_number, $barangay_id, $password);
-        $success_message = "Account created! Please check your email to verify your account.";
-        // TODO: send $verification_code via email
+        try {
+            $result = $db->registerYouth($first_name, $last_name, $email, $phone_number, $barangay_id, $password);
+
+            $_SESSION['user_id'] = $result['user_id'];
+            $_SESSION['verify_email'] = $email;
+
+            $verification_code = $result['verification_code'];
+
+            $mail = new PHPMailer(true);
+
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'your_email@gmail.com';
+            $mail->Password   = 'your_16_character_app_password';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            $mail->setFrom('your_email@gmail.com', 'SK360');
+            $mail->addAddress($email, $first_name . ' ' . $last_name);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'SK360 Verification Code';
+            $mail->Body    = "
+                <div style='font-family: Arial, sans-serif;'>
+                    <h2>Verify your account</h2>
+                    <p>Hello {$first_name},</p>
+                    <p>Your verification code is:</p>
+                    <h1 style='letter-spacing: 4px; color: #D32F2F;'>{$verification_code}</h1>
+                    <p>This code will expire in 1 hour.</p>
+                </div>
+            ";
+
+            $mail->send();
+
+            header("Location: verify.php");
+            exit;
+
+        } catch (Exception $e) {
+            $errors[] = "Account created, but the verification email could not be sent.";
+        } catch (PDOException $e) {
+            $errors[] = "Database error: " . $e->getMessage();
+        }
     }
 }
 
-// Fetch barangays
 $barangays = $db->getBarangays();
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -57,20 +106,21 @@ $barangays = $db->getBarangays();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK 360 Register</title>
 <link rel="stylesheet" href="../css/register.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 input, select { display:block; margin-bottom:5px; padding:8px; width:100%; box-sizing:border-box; }
 small.error-msg { color:red; font-size:12px; display:block; margin-bottom:10px; }
 input.valid { border: 2px solid green; }
 input.invalid { border: 2px solid red; }
 button:disabled { background-color: gray; cursor: not-allowed; }
+.hidden { display:none; }
+.errors { background:#ffe5e5; color:#b00020; padding:10px; margin-bottom:15px; border-radius:8px; }
 </style>
 </head>
 <body>
 
 <div class="container">
     <div class="left">
-        <div class ="back"><a href="../index.php"> Back to home</a></div>
+        <div class="back"><a href="../index.php">Back to home</a></div>
         <h2>SK 360°</h2>
         <h3>Join SK 360°</h3>
         <p>Create your account to access the centralized platform for youth governance in Lipa City.</p>
@@ -95,26 +145,21 @@ button:disabled { background-color: gray; cursor: not-allowed; }
         <?php endif; ?>
 
         <form id="registerForm" method="POST">
-            <!-- STEP 1 -->
             <div id="info">
                 <h2>Create Account</h2>
                 <p class="subtitle">Fill in your information to get started</p>
 
                 <label>First Name</label>
                 <input type="text" name="first_name" placeholder="Juan" value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>">
-                <small class="error-msg"></small>
 
                 <label>Last Name</label>
                 <input type="text" name="last_name" placeholder="Dela Cruz" value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>">
-                <small class="error-msg"></small>
 
                 <label>Email Address</label>
                 <input type="email" name="email" placeholder="sk360@gmail.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-                <small class="error-msg"></small>
 
                 <label>Phone Number</label>
-                <input type="text" name="phone_number" placeholder="0912 345 6789" maxlength="11" value="<?= htmlspecialchars($_POST['phone_number'] ?? '') ?>">
-                <small class="error-msg"></small>
+                <input type="text" name="phone_number" placeholder="09123456789" maxlength="11" value="<?= htmlspecialchars($_POST['phone_number'] ?? '') ?>">
 
                 <label>Barangay</label>
                 <select name="barangay_id">
@@ -125,42 +170,39 @@ button:disabled { background-color: gray; cursor: not-allowed; }
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <small class="error-msg"></small>
 
-                <button type="button" onclick="nextStep()" id="step1Continue" disabled>Continue</button>
+                <button type="button" onclick="nextStep()">Continue</button>
             </div>
 
-            <!-- STEP 2 -->
             <div id="pass" class="hidden">
                 <h2>Set Your Password</h2>
                 <p class="subtitle">Choose a strong password for your account</p>
 
                 <label>Password</label>
                 <input type="password" name="password" placeholder="Create a strong password">
-                <small class="error-msg"></small>
 
                 <label>Confirm Password</label>
                 <input type="password" name="confirm_password" placeholder="Re-enter your password">
-                <small class="error-msg"></small>
 
                 <div class="btn-group">
                     <button type="button" class="back-btn" onclick="prevStep()">Back</button>
-                    <button type="submit" id="submitBtn" disabled>Create Account</button>
+                    <button type="submit">Create Account</button>
                 </div>
             </div>
         </form>
-
     </div>
-    <script>
-        function nextStep(){
-            document.getElementById("info").classList.add("hidden");
-            document.getElementById("pass").classList.remove("hidden");
-        }
-        function prevStep(){
-            document.getElementById("pass").classList.add("hidden");
-            document.getElementById("info").classList.remove("hidden");
-        }
-        
-    </script>
+</div>
+
+<script>
+function nextStep() {
+    document.getElementById("info").classList.add("hidden");
+    document.getElementById("pass").classList.remove("hidden");
+}
+function prevStep() {
+    document.getElementById("pass").classList.add("hidden");
+    document.getElementById("info").classList.remove("hidden");
+}
+</script>
+
 </body>
 </html>
