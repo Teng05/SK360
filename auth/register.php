@@ -64,12 +64,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'your_email@gmail.com';
-            $mail->Password   = 'your_16_character_app_password';
+            $mail->Username   = 'paulmonje123@gmail.com';
+            $mail->Password   = 'vrffgqfdpautwxsf';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            $mail->setFrom('your_email@gmail.com', 'SK360');
+            $mail->setFrom('paulmonje123@gmail.com', 'SK360');
             $mail->addAddress($email, $first_name . ' ' . $last_name);
 
             $mail->isHTML(true);
@@ -83,14 +83,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>This code will expire in 1 hour.</p>
                 </div>
             ";
-
+$mail->SMTPDebug = 2;
+$mail->Debugoutput = 'html';
             $mail->send();
 
             header("Location: verify.php");
             exit;
 
         } catch (Exception $e) {
-            $errors[] = "Account created, but the verification email could not be sent.";
+            $errors[] = "Account created, but the verification email could not be sent. Mailer Error: " . $mail->ErrorInfo;
         } catch (PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
         }

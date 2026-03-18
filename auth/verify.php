@@ -5,9 +5,9 @@ require_once '../classes/database.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once '../PHPMailer/src/PHPMailer.php';
-require_once '../PHPMailer/src/SMTP.php';
-require_once '../PHPMailer/src/Exception.php';
+require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/PHPMailer.php';
+require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/SMTP.php';
+require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/Exception.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: register.php");
@@ -20,7 +20,6 @@ $conn = $db->openConnection();
 $message = "";
 $email = $_SESSION['verify_email'] ?? "";
 
-// VERIFY CODE
 if (isset($_POST['verify'])) {
     $code = implode("", $_POST['code'] ?? []);
     $code = preg_replace('/\D/', '', $code);
@@ -56,7 +55,6 @@ if (isset($_POST['verify'])) {
     }
 }
 
-// RESEND CODE
 if (isset($_POST['resend'])) {
     $user_id = $_SESSION['user_id'];
 
@@ -80,12 +78,12 @@ if (isset($_POST['resend'])) {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'your_email@gmail.com';
-            $mail->Password   = 'your_16_character_app_password';
+            $mail->Username   = 'paulmonje123@gmail.com';
+            $mail->Password   = 'vrffgqfdautwxsf';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            $mail->setFrom('your_email@gmail.com', 'SK360');
+            $mail->setFrom('paulmonje123@gmail.com', 'SK360');
             $mail->addAddress($user['email'], $user['first_name']);
 
             $mail->isHTML(true);
@@ -97,12 +95,13 @@ if (isset($_POST['resend'])) {
                     <p>This code will expire in 1 hour.</p>
                 </div>
             ";
-
+            $mail->SMTPDebug = 2;
+$mail->Debugoutput = 'html';
             $mail->send();
             $message = "A new code has been sent to your email.";
 
         } catch (Exception $e) {
-            $message = "Failed to send email. Check your SMTP settings.";
+            $message = "Failed to send email. Mailer Error: " . $mail->ErrorInfo;
         }
     } else {
         $message = "User not found.";
