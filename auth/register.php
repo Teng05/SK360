@@ -160,6 +160,7 @@ button:disabled { background-color: gray; cursor: not-allowed; }
             document.getElementById("pass").classList.add("hidden");
             document.getElementById("info").classList.remove("hidden");
         }
+        
     </script>
 </body>
 </html>
