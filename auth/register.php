@@ -32,7 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm_pass) {
         $errors[] = "Passwords do not match.";
     }
-
+/*
+    if ($password && $confirm_pass &&)
+*/
     if (
         strlen($password) < 8 ||
         !preg_match('/[A-Z]/', $password) ||
