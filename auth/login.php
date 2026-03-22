@@ -4,7 +4,6 @@ session_start();
 
 $db = new Database();
 $errors = [];
-$success_message = "";
 
 // Handle POST login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -17,11 +16,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $db->loginUser($email, $password);
 
         if ($user) {
+            // Store session
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['first_name'] = $user['first_name'];
 
-            $success_message = "Login successful! Redirecting...";
+            //  ROLE-BASED REDIRECT (SERVER SIDE)
+            switch ($user['role']) {
+                case 'youth':
+                    header("Location: ../youth/dashboard.php");
+                    break;
+
+                case 'sk_president':
+                    header("Location: ../Pres/dashboard.php");
+                    break;
+
+                case 'sk_chairman':
+                    header("Location: ../chairman/dashboard.php");
+                    break;
+
+                case 'sk_secretary':
+                    header("Location: ../secretary/dashboard.php");
+                    break;
+
+                default:
+                    session_destroy();
+                    header("Location: login.php");
+                    exit();
+            }
+            exit();
         } else {
             // Check why login failed
             $stmt = $db->openConnection()->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
@@ -57,49 +80,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="container">
 
-    <div class ="left-panel">
-        <div class ="back"><a href="../index.php"> Back to home</a></div>
-        <h2 class ="logo">SK 360°</h2>
+    <div class="left-panel">
+        <div class="back"><a href="../index.php"> Back to home</a></div>
+        <h2 class="logo">SK 360°</h2>
         <h1>Welcome Back!</h1>
         <p>Access your dashboard to manage reports, 
             coordinate with your team, 
             and drive youth governance forward.</p>
 
-        <div class ="features">
-            <div class = "feature">
+        <div class="features">
+            <div class="feature">
                 <span>🛡️</span>
                 <div>
                     <b>Secure Access</b>
-                <p>Role-based authentication for data protection</p>
+                    <p>Role-based authentication for data protection</p>
                 </div>
             </div>
 
-            <div class = "feature">
+            <div class="feature">
                 <span>📊</span>
                 <div>
                     <b>Centralized Dashboard</b>
-                <p>All your tools in one place</p>
+                    <p>All your tools in one place</p>
                 </div>
             </div>
 
-            <div class = "feature">
+            <div class="feature">
                 <span>🤝</span>
                 <div>
                     <b>Real-Time Collaboration</b>
-                <p>Connect with SK officials instantly</p>
+                    <p>Connect with SK officials instantly</p>
                 </div>
             </div>
         </div>   
     </div>
 
-    <div class ="right-panel">
+    <div class="right-panel">
         <h2>Sign In</h2>
         <p class="subtitle">Enter your credentials to access your account</p>
 
         <form method="POST">
 
             <label>Email Address</label>
-            <input type="email" name="email" placeholder="x.sk@gmail.com" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+            <input type="email" name="email" placeholder="x.sk@gmail.com"
+                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
 
             <label>Password</label>
             <input type="password" name="password" placeholder="Enter your password" required>
@@ -130,22 +154,6 @@ Swal.fire({
     icon: 'error',
     title: 'Login Failed',
     html: '<?= implode("<br>", array_map('htmlspecialchars', $errors)) ?>'
-});
-<?php endif; ?>
-
-// Show success message
-<?php if($success_message): ?>
-Swal.fire({
-    icon: 'success',
-    title: 'Success',
-    text: '<?= addslashes($success_message) ?>',
-    confirmButtonText: 'OK'
-}).then(() => {
-    <?php if(isset($_SESSION['role'])): ?>
-        let role = "<?= $_SESSION['role'] ?>";
-        if(role === 'youth') { window.location.href='../dashboard/youth.php'; }
-        else { window.location.href='../dashboard/admin.php'; }
-    <?php endif; ?>
 });
 <?php endif; ?>
 </script>

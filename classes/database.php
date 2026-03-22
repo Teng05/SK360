@@ -2,7 +2,7 @@
 class Database {
 
     private $host = 'localhost';
-    private $dbname = 'sk360';
+    private $dbname = 'sk360_db';
     private $username = 'root';
     private $password = '';
     public $conn;
