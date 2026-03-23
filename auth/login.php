@@ -28,15 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
 
                 case 'sk_president':
-                    header("Location: ../Pres/dashboard.php");
+                    header("Location: ../sk_president/dashboard.php");
                     break;
 
                 case 'sk_chairman':
-                    header("Location: ../chairman/dashboard.php");
+                    header("Location: ../sk_chairman/dashboard.php");
                     break;
 
                 case 'sk_secretary':
-                    header("Location: ../secretary/dashboard.php");
+                    header("Location: ../sk_secretary/dashboard.php");
                     break;
 
                 default:
