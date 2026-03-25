@@ -70,10 +70,18 @@ class Database {
     }
 
     // Check if email exists
-    public function emailExists($email) {
+    public function isEmailExists($email) {
         $conn = $this->openConnection();
         $stmt = $conn->prepare("SELECT 1 FROM users WHERE email = ? LIMIT 1");
         $stmt->execute([$email]);
+        return $stmt->fetchColumn() ? true : false;
+    }
+
+    // Check if phone number exists
+    public function isPhoneExists($phone_number) {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("SELECT 1 FROM users WHERE phone_number = ? LIMIT 1");
+        $stmt->execute([$phone_number]);
         return $stmt->fetchColumn() ? true : false;
     }
 

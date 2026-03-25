@@ -5,9 +5,9 @@ session_start();
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once '../PHPMailer/src/PHPMailer.php';
-require_once '../PHPMailer/src/SMTP.php';
-require_once '../PHPMailer/src/Exception.php';
+require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/PHPMailer.php';
+require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/SMTP.php';
+require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/Exception.php';
 
 $db = new Database();
 $errors = [];
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Phone number must be 10–11 digits.";
     }
 
-    if ($db->emailExists($email)) {
+    if ($db->isEmailExists($email)) {
         $errors[] = "Email is already registered.";
     }
 
@@ -66,12 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'your_email@gmail.com';
-            $mail->Password   = 'your_16_character_app_password';
+            $mail->Username   = 'paulmonje123@gmail.com';
+            $mail->Password   = 'vrffgqfdpautwxsf';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            $mail->setFrom('your_email@gmail.com', 'SK360');
+            $mail->setFrom('paulmonje123@gmail.com', 'SK360');
             $mail->addAddress($email, $first_name . ' ' . $last_name);
 
             $mail->isHTML(true);
@@ -85,14 +85,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>This code will expire in 1 hour.</p>
                 </div>
             ";
-
+$mail->SMTPDebug = 2;
+$mail->Debugoutput = 'html';
             $mail->send();
 
             header("Location: verify.php");
             exit;
 
         } catch (Exception $e) {
-            $errors[] = "Account created, but the verification email could not be sent.";
+            $errors[] = "Account created, but the verification email could not be sent. Mailer Error: " . $mail->ErrorInfo;
         } catch (PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
         }
@@ -196,14 +197,206 @@ button:disabled { background-color: gray; cursor: not-allowed; }
 </div>
 
 <script>
-function nextStep() {
-    document.getElementById("info").classList.add("hidden");
-    document.getElementById("pass").classList.remove("hidden");
-}
-function prevStep() {
-    document.getElementById("pass").classList.add("hidden");
-    document.getElementById("info").classList.remove("hidden");
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('registerForm');
+    const continueBtn = document.querySelector('#info button');
+    const submitBtn = document.querySelector('#pass button[type="submit"]');
+
+    // Fields
+    const firstName = form.querySelector('input[name="first_name"]');
+    const lastName = form.querySelector('input[name="last_name"]');
+    const email = form.querySelector('input[name="email"]');
+    const phone = form.querySelector('input[name="phone_number"]');
+    const barangay = form.querySelector('select[name="barangay_id"]');
+    const password = form.querySelector('input[name="password"]');
+    const confirmPassword = form.querySelector('input[name="confirm_password"]');
+
+    // Helper: create or get <small> for error messages
+    function getErrorElem(field) {
+        let el = field.nextElementSibling;
+        if (!el || !el.classList.contains('error-msg')) {
+            el = document.createElement('small');
+            el.classList.add('error-msg');
+            field.insertAdjacentElement('afterend', el);
+        }
+        return el;
+    }
+
+    // Validation functions
+    const validators = {
+        firstName: val => val.trim() !== '',
+        lastName: val => val.trim() !== '',
+        email: val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+        phone: val => /^\d{10,11}$/.test(val),
+        barangay: val => val !== '',
+        password: val => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(val),
+        confirmPassword: val => val === password.value
+    };
+
+    // Track validity
+    const fieldValidity = {
+        firstName: false,
+        lastName: false,
+        email: false,
+        phone: false,
+        barangay: false,
+        password: false,
+        confirmPassword: false
+    };
+
+    // Set field validity classes
+    function setFieldValidity(field, isValid, message='') {
+        const errorEl = getErrorElem(field);
+        if (isValid) {
+            field.classList.add('valid');
+            field.classList.remove('invalid');
+            errorEl.textContent = '';
+        } else {
+            field.classList.add('invalid');
+            field.classList.remove('valid');
+            errorEl.textContent = message;
+        }
+    }
+
+    // Real-time field validation (non-AJAX)
+    function attachValidation(field, key, customMsg) {
+        field.addEventListener('input', () => {
+            const isValid = validators[key](field.value);
+            fieldValidity[key] = isValid;
+            setFieldValidity(field, isValid, isValid ? '' : customMsg);
+            toggleButtons();
+        });
+    }
+
+    attachValidation(firstName, 'firstName', 'First name is required.');
+    attachValidation(lastName, 'lastName', 'Last name is required.');
+    attachValidation(barangay, 'barangay', 'Please select a barangay.');
+    attachValidation(password, 'password', 'Password must be 8+ chars with uppercase, lowercase, and number.');
+    attachValidation(confirmPassword, 'confirmPassword', 'Passwords do not match.');
+
+    // Real-time AJAX Email check
+    email.addEventListener('input', () => {
+        const val = email.value.trim();
+        if (!validators.email(val)) {
+            fieldValidity.email = false;
+            setFieldValidity(email, false, 'Please enter a valid email format.');
+            toggleButtons();
+            return;
+        }
+
+        // AJAX call
+        fetch('../ajax/check_email.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `email=${encodeURIComponent(val)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.exists) {
+                fieldValidity.email = false;
+                setFieldValidity(email, false, 'Email is already registered.');
+            } else {
+                fieldValidity.email = true;
+                setFieldValidity(email, true);
+            }
+            toggleButtons();
+        })
+        .catch(() => {
+            fieldValidity.email = false;
+            setFieldValidity(email, false, 'Error checking email.');
+            toggleButtons();
+        });
+    });
+
+    // Real-time AJAX Phone check
+    phone.addEventListener('input', () => {
+        const val = phone.value.trim();
+        if (!validators.phone(val)) {
+            fieldValidity.phone = false;
+            setFieldValidity(phone, false, 'Phone number must be 10–11 digits.');
+            toggleButtons();
+            return;
+        }
+
+        // AJAX call
+        fetch('../ajax/check_phone.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `phone_number=${encodeURIComponent(val)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.exists) {
+                fieldValidity.phone = false;
+                setFieldValidity(phone, false, 'Phone number is already registered.');
+            } else {
+                fieldValidity.phone = true;
+                setFieldValidity(phone, true);
+            }
+            toggleButtons();
+        })
+        .catch(() => {
+            fieldValidity.phone = false;
+            setFieldValidity(phone, false, 'Error checking phone number.');
+            toggleButtons();
+        });
+    });
+
+    // Enable/disable buttons
+    function toggleButtons() {
+        // Continue button: only first step fields
+        const firstStepValid = fieldValidity.firstName &&
+                               fieldValidity.lastName &&
+                               fieldValidity.email &&
+                               fieldValidity.phone &&
+                               fieldValidity.barangay;
+        continueBtn.disabled = !firstStepValid;
+
+        // Submit button: all fields
+        const allValid = firstStepValid &&
+                         fieldValidity.password &&
+                         fieldValidity.confirmPassword;
+        submitBtn.disabled = !allValid;
+    }
+
+    // Initial toggle
+    toggleButtons();
+
+    function nextStep() {
+        document.getElementById("info").classList.add("hidden");
+        document.getElementById("pass").classList.remove("hidden");
+    }
+
+    function prevStep() {
+        document.getElementById("pass").classList.add("hidden");
+        document.getElementById("info").classList.remove("hidden");
+    }
+
+    // Optional: prevent Continue button from moving if invalid
+    continueBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // always prevent default submit or navigation
+
+        const firstStepValid = fieldValidity.firstName &&
+                            fieldValidity.lastName &&
+                            fieldValidity.email &&
+                            fieldValidity.phone &&
+                            fieldValidity.barangay;
+
+        if (firstStepValid) {
+            // Move to password step only if valid
+            nextStep();
+        } else {
+            // Optionally, highlight invalid fields or show a general error message
+            alert('Please fix the errors before continuing.');
+        }
+    });
+
+    // Optional: prevent form submit if invalid
+    form.addEventListener('submit', (e) => {
+        const allValid = Object.values(fieldValidity).every(v => v);
+        if (!allValid) e.preventDefault();
+    });
+});
 </script>
 
 </body>
