@@ -130,112 +130,183 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sk_president') {
 
         </div>
 
-        <!-- CONTENT -->
-        <main class="flex-1 overflow-y-auto p-8">
+               <!-- CONTENT -->
+        <main class="flex-1 overflow-y-auto p-8 bg-[#f8fafc]">
 
-            <!-- GREETING -->
-            <div class="mb-6">
-                <h2 class="text-[32px] font-bold text-gray-900 leading-tight">Good morning, SK President!</h2>
-                <p class="text-gray-500 mt-1">Here's what’s happening in SK 360° today.</p>
+            <!-- HEADER -->
+            <div class="flex items-start justify-between mb-8">
+                <div>
+                    <h2 class="text-[38px] font-bold text-gray-900 leading-tight">
+                        Submission Slot Management
+                    </h2>
+                    <p class="text-gray-500 mt-2 text-base">
+                        Create and manage submission periods for Accomplishment Reports and Budget Documents
+                    </p>
+                </div>
+
+                <button id="openModalBtn" class="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-lg text-sm font-semibold shadow-sm">
+                       ＋ Create Submission Slot </button>
             </div>
 
-            <!-- CARDS -->
-            <div class="grid grid-cols-4 gap-5 mb-6">
+                <!-- CREATE SUBMISSION SLOT MODAL -->
+    <div id="submissionModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 px-4">
+        <div class="bg-white w-full max-w-3xl rounded-[24px] border-2 border-blue-500 shadow-2xl p-8 relative">
 
-                <div class="bg-[#ef4444] text-white p-5 rounded-2xl shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-3xl font-bold">0</h3>
-                            <p class="text-sm mt-1">Reports Submitted</p>
-                        </div>
-                        <span class="text-xl opacity-80">📄</span>
-                    </div>
+            <!-- CLOSE BUTTON -->
+            <button id="closeModalBtn" 
+                class="absolute top-4 right-5 text-gray-500 hover:text-red-600 text-2xl font-bold">
+                &times;
+            </button>
+
+            <!-- MODAL HEADER -->
+            <h2 class="text-4xl font-bold text-gray-900 mb-2">
+                Create New Submission Slot
+            </h2>
+            <p class="text-gray-600 mb-8 text-base">
+                Set up a new submission period for SK officials to submit reports
+            </p>
+
+            <!-- FORM -->
+            <form action="" method="POST" class="space-y-6">
+
+                <!-- SUBMISSION TYPE -->
+                <div>
+                    <label class="block text-lg font-semibold text-gray-900 mb-2">
+                        Submission Type
+                    </label>
+                    <input type="text" name="submission_type"
+                        class="w-full h-14 px-4 rounded-xl border border-red-300 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        value="">
                 </div>
 
-                <div class="bg-[#3b82f6] text-white p-5 rounded-2xl shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-3xl font-bold">0%</h3>
-                            <p class="text-sm mt-1">Community Engagement</p>
-                        </div>
-                        <span class="text-xl opacity-80">📈</span>
-                    </div>
+                <!-- SUBMISSION TITLE -->
+                <div>
+                    <label class="block text-lg font-semibold text-gray-900 mb-2">
+                        Submission Title
+                    </label>
+                    <input type="text" name="submission_title"
+                        class="w-full h-14 px-4 rounded-xl border border-red-300 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        value="">
                 </div>
 
-                <div class="bg-[#f59e0b] text-white p-5 rounded-2xl shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-3xl font-bold">0</h3>
-                            <p class="text-sm mt-1">Pending Reviews</p>
-                        </div>
-                        <span class="text-xl opacity-80">🕒</span>
-                    </div>
+                <!-- DESCRIPTION -->
+                <div>
+                    <label class="block text-lg font-semibold text-gray-900 mb-2">
+                        Description
+                    </label>
+                    <input type="text" name="description"
+                        class="w-full h-14 px-4 rounded-xl border border-red-300 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        value="">
                 </div>
 
-                <div class="bg-[#22c55e] text-white p-5 rounded-2xl shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-3xl font-bold">0</h3>
-                            <p class="text-sm mt-1">Upcoming Events</p>
-                        </div>
-                        <span class="text-xl opacity-80">📅</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- QUICK ACTIONS -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
-                <h3 class="font-semibold text-gray-800 mb-1">Quick Actions</h3>
-                <p class="text-sm text-gray-400 mb-4">Frequently used features</p>
-
-                <div class="flex flex-wrap gap-3">
-                    <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                        Create Announcement
-                    </button>
-                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                        Manage Events
-                    </button>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                        Schedule Meeting
-                    </button>
-                    <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
-                        Open Chat
-                    </button>
-                    <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
-                        View Analytics
-                    </button>
-                </div>
-            </div>
-
-            <!-- ACTIVITY FEED -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm">
-                <div class="flex justify-between items-center mb-4">
+                <!-- DATES -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <h3 class="font-semibold text-gray-800">Activity Feed</h3>
-                        <p class="text-sm text-gray-400">Latest updates and announcements</p>
+                        <label class="block text-lg font-semibold text-gray-900 mb-2">
+                            Start Date
+                        </label>
+                        <input type="date" name="start_date"
+                            class="w-full h-14 px-4 rounded-xl border border-red-300 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400">
                     </div>
-                    <span class="text-xs px-2 py-1 rounded-full bg-red-50 text-red-500">● Live</span>
-                </div>
 
-                <!-- POST BOX -->
-                <div class="border border-gray-200 rounded-xl p-4 mb-4">
-                    <textarea 
-                        rows="3"
-                        placeholder="What's on your mind?"
-                        class="w-full border border-gray-200 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-red-400"
-                    ></textarea>
-
-                    <div class="flex justify-end mt-3">
-                        <button class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm font-medium">
-                            Post
-                        </button>
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-900 mb-2">
+                            End Date
+                        </label>
+                        <input type="date" name="end_date"
+                            class="w-full h-14 px-4 rounded-xl border border-red-300 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400">
                     </div>
                 </div>
 
-                <!-- EMPTY STATE -->
-                <div class="text-center text-gray-400 py-12">
-                    No posts yet. Start sharing updates 🚀
+                <!-- SUBMIT BUTTON -->
+                <button type="submit"
+                    class="w-full bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-4 rounded-2xl transition">
+                    Create Slot
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const submissionModal = document.getElementById('submissionModal');
+
+    openModalBtn.addEventListener('click', () => {
+        submissionModal.classList.remove('hidden');
+        submissionModal.classList.add('flex');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        submissionModal.classList.add('hidden');
+        submissionModal.classList.remove('flex');
+    });
+
+    submissionModal.addEventListener('click', (e) => {
+        if (e.target === submissionModal) {
+            submissionModal.classList.add('hidden');
+            submissionModal.classList.remove('flex');
+        }
+    });
+</script>
+
+            <!-- SUMMARY CARDS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-10">
+
+                <!-- CARD 1 -->
+                <div class="bg-white rounded-2xl border border-red-400 p-5">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">Total Slots</p>
+                            <h3 class="text-4xl font-bold text-gray-900 leading-none">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-500 text-xl">
+                            📋
+                        </div>
+                    </div>
                 </div>
+
+                <!-- CARD 2 -->
+                <div class="bg-white rounded-2xl border border-green-400 p-5">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">Open Slots</p>
+                            <h3 class="text-4xl font-bold text-gray-900 leading-none">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-500 text-xl">
+                            🔓
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3 -->
+                <div class="bg-white rounded-2xl border border-blue-400 p-5">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Current</p>
+                            <p class="text-sm text-gray-500 mb-2">Submissions</p>
+                            <h3 class="text-4xl font-bold text-gray-900 leading-none">0/0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 text-xl">
+                            ☑️
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 4 -->
+                <div class="bg-white rounded-2xl border border-yellow-400 p-5">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">All-Time Total</p>
+                            <h3 class="text-4xl font-bold text-gray-900 leading-none">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center text-yellow-500 text-xl">
+                            👥
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </main>
