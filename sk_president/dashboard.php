@@ -22,7 +22,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sk_president') {
 
 <div class="flex h-screen">
 
-    <!-- SIDEBAR -->
+   <!-- SIDEBAR -->
 <div class="w-64 bg-red-600 text-white flex flex-col p-3 overflow-y-auto">
 
     <!-- LOGO -->
@@ -46,68 +46,68 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sk_president') {
     <!-- MENU -->
     <nav class="space-y-1 text-xs">
 
-        <!-- ACTIVE -->
-        <a href="#" class="flex items-center gap-2 bg-red-500 p-2 rounded-lg">
-            <span class="bg-yellow-400 text-red-600 p-1 rounded text-sm">🏠</span>
+        
+        <a href="home.php" class="flex items-center gap-2 bg-red-500 p-2 rounded-lg">
+            <span class="bg-red-400 p-1 rounded text-sm ">🏠</span>
             <span class="text-yellow-300 font-semibold text-xs">Home</span>
         </a>
-
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg transition">
-            <span class="bg-red-400 p-1 rounded text-sm">📊</span>
+<!-- ACTIVE -->
+        <a href="dashboard.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg transition">
+            <span class="bg-yellow-400 text-red-600 p-1 rounded text-sm">📊</span>
             <span class="text-xs">Dashboard</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="consolidation.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">📁</span>
             <span class="text-xs">Consolidation</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="module.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">⚙️</span>
             <span class="text-xs">Module Management</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="announcements.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">📢</span>
             <span class="text-xs">Announcements</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="calendar.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">📅</span>
             <span class="text-xs">Calendar</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="chat.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">💬</span>
             <span class="text-xs">Chat</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="meetings.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">📞</span>
             <span class="text-xs">Meetings</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="rankings.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">🏆</span>
             <span class="text-xs">Rankings</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="analytics.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">📈</span>
             <span class="text-xs">Analytics</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="leadership.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">👥</span>
             <span class="text-xs">Leadership</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="archive.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">🗂️</span>
             <span class="text-xs">Archive</span>
         </a>
 
-        <a href="#" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+        <a href="user_management.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
             <span class="bg-red-400 p-1 rounded text-sm">👤</span>
             <span class="text-xs">User Management</span>
         </a>
@@ -116,12 +116,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sk_president') {
 
 </div>
 
-    <!-- MAIN -->
+       <!-- MAIN -->
     <div class="flex-1 flex flex-col">
 
         <!-- TOPBAR -->
         <div class="bg-red-600 text-white px-6 py-3 flex justify-between items-center shadow">
-
             <input type="text" placeholder="Search..." 
                 class="px-4 py-2 rounded-full text-black w-1/3 focus:outline-none">
 
@@ -130,95 +129,99 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sk_president') {
                 <!-- USER NAME (PHP READY) -->
                 <span class="font-semibold">User</span>
             </div>
-
         </div>
 
         <!-- CONTENT -->
-        <div class="p-6 overflow-y-auto">
-
-            <!-- GREETING -->
-            <h1 class="text-2xl font-bold mb-4">
-                Good morning, <span>User</span>!
+        <div class="flex-1 bg-gray-100 p-8 overflow-y-auto">
+            
+            <!-- WELCOME TEXT -->
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                Welcome back, SK President
             </h1>
+            <p class="text-gray-600 text-lg mb-8">
+                Here's an overview of SK activities and submissions as of 1/25/2026
+            </p>
 
             <!-- CARDS -->
-            <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
 
-                <div class="bg-red-500 text-white p-5 rounded-xl shadow">
-                    <h2 class="text-2xl font-bold">0</h2>
-                    <p class="text-sm">Reports Submitted</p>
-                </div>
-
-                <div class="bg-blue-500 text-white p-5 rounded-xl shadow">
-                    <h2 class="text-2xl font-bold">0%</h2>
-                    <p class="text-sm">Community Engagement</p>
-                </div>
-
-                <div class="bg-yellow-500 text-white p-5 rounded-xl shadow">
-                    <h2 class="text-2xl font-bold">0</h2>
-                    <p class="text-sm">Pending Reviews</p>
-                </div>
-
-                <div class="bg-green-500 text-white p-5 rounded-xl shadow">
-                    <h2 class="text-2xl font-bold">0</h2>
-                    <p class="text-sm">Upcoming Events</p>
-                </div>
-
-            </div>
-
-            <!-- QUICK ACTIONS -->
-            <div class="bg-white p-5 rounded-xl shadow mb-6">
-                <h2 class="font-semibold mb-3">Quick Actions</h2>
-                <div class="flex gap-3 flex-wrap">
-                    <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
-                        Create Announcement
-                    </button>
-                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg">
-                        Manage Events
-                    </button>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                        Schedule Meeting
-                    </button>
-                </div>
-            </div>
-
-            <!-- ACTIVITY FEED -->
-            <div class="bg-white p-6 rounded-xl shadow">
-
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-semibold">Activity Feed</h2>
-                    <span class="text-xs text-gray-400">Live</span>
-                </div>
-
-                <!-- POST BOX -->
-                <div class="border rounded-lg p-4 mb-4">
-
-                    <textarea 
-                        class="w-full border rounded p-3 resize-none focus:outline-none focus:ring-2 focus:ring-red-400"
-                        rows="3"
-                        placeholder="What's on your mind?"
-                    ></textarea>
-
-                    <div class="flex justify-end mt-3">
-                        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
-                            Post
-                        </button>
+                <!-- CARD 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Total Users</p>
+                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-xl">
+                            <span class="text-red-500 text-xl">👥</span>
+                        </div>
                     </div>
-
+                    <div class="text-sm text-gray-500 leading-5 mb-3">
+                        <p>0 officials,</p>
+                        <p>0 youth</p>
+                    </div>
+                    <p class="text-sm text-green-500">↗ +0 this month</p>
                 </div>
 
-                <!-- EMPTY STATE -->
-                <div class="text-center text-gray-400 py-10">
-                    No posts yet. Start sharing updates 🚀
+                <!-- CARD 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Lipa Youth</p>
+                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-xl">
+                            <span class="text-yellow-500 text-xl">👤</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500 leading-5 mb-3">
+                        <p>0 active</p>
+                        <p>members</p>
+                    </div>
+                    <p class="text-sm text-green-500">↗ +0 new signups</p>
+                </div>
+
+                <!-- CARD 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-sm text-gray-500">SK Chairmen</p>
+                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-xl">
+                            <span class="text-green-500 text-xl">🛡️</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500 leading-5 mb-3">
+                        <p>Across 0</p>
+                        <p>barangays</p>
+                    </div>
+                    <p class="text-sm text-green-500">↗ 0% coverage</p>
+                </div>
+
+                <!-- CARD 4 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-sm text-gray-500">SK Secretaries</p>
+                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-xl">
+                            <span class="text-blue-500 text-xl">📄</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500 leading-5 mb-3">
+                        <p>0</p>
+                        <p>remaining</p>
+                    </div>
+                    <p class="text-sm text-green-500">↗ 0% staffed</p>
                 </div>
 
             </div>
-
         </div>
 
     </div>
 
-</div>
-
+    </div>
 </body>
 </html>
