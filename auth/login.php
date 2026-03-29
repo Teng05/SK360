@@ -24,19 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             //  ROLE-BASED REDIRECT (SERVER SIDE)
             switch ($user['role']) {
                 case 'youth':
-                    header("Location: ../youth/dashboard.php");
+                    header("Location: ../youth/home.php");
                     break;
 
                 case 'sk_president':
-                    header("Location: ../sk_president/dashboard.php");
+                    header("Location: ../sk_president/home.php");
                     break;
 
                 case 'sk_chairman':
-                    header("Location: ../sk_chairman/dashboard.php");
+                    header("Location: ../sk_chairman/home.php");
                     break;
 
                 case 'sk_secretary':
-                    header("Location: ../sk_secretary/dashboard.php");
+                    header("Location: ../sk_secretary/home.php");
                     break;
 
                 default:

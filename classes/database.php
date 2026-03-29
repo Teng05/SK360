@@ -100,4 +100,11 @@ class Database {
 
         return false;
     }
+// Top bar name
+    public function getUserById($user_id) {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("SELECT user_id, first_name, last_name, role FROM users WHERE user_id = ? LIMIT 1");
+        $stmt->execute([$user_id]);
+        return $stmt->fetch();
+    }
 }

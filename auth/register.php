@@ -112,8 +112,8 @@ $barangays = $db->getBarangays();
 <style>
 input, select { display:block; margin-bottom:5px; padding:8px; width:100%; box-sizing:border-box; }
 small.error-msg { color:red; font-size:12px; display:block; margin-bottom:10px; }
-input.valid { border: 2px solid green; }
-input.invalid { border: 2px solid red; }
+input.valid, select.valid { border: 2px solid green; }
+input.invalid, select.invalid { border: 2px solid red; }
 button:disabled { background-color: gray; cursor: not-allowed; }
 .hidden { display:none; }
 .errors { background:#ffe5e5; color:#b00020; padding:10px; margin-bottom:15px; border-radius:8px; }
@@ -197,10 +197,102 @@ button:disabled { background-color: gray; cursor: not-allowed; }
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get form elements
+    const firstName = document.querySelector('input[name="first_name"]');
+    const lastName = document.querySelector('input[name="last_name"]');
+    const email = document.querySelector('input[name="email"]');
+    const phoneNumber = document.querySelector('input[name="phone_number"]');
+    const barangay = document.querySelector('select[name="barangay_id"]');
+    const continueBtn = document.querySelector('button[onclick="nextStep()"]');
+
+    // Validation functions
+    function validateFirstName() {
+        const value = firstName.value.trim();
+        const isValid = value.length > 0;
+        firstName.classList.toggle('valid', isValid);
+        firstName.classList.toggle('invalid', !isValid && value.length > 0);
+        return isValid;
+    }
+
+    function validateLastName() {
+        const value = lastName.value.trim();
+        const isValid = value.length > 0;
+        lastName.classList.toggle('valid', isValid);
+        lastName.classList.toggle('invalid', !isValid && value.length > 0);
+        return isValid;
+    }
+
+    function validateEmail() {
+        const value = email.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = value.length > 0 && emailRegex.test(value);
+        email.classList.toggle('valid', isValid);
+        email.classList.toggle('invalid', value.length > 0 && !isValid);
+        return isValid;
+    }
+
+    function validatePhoneNumber() {
+        const value = phoneNumber.value.trim();
+        const isValid = /^\d{10,11}$/.test(value);
+        phoneNumber.classList.toggle('valid', isValid);
+        phoneNumber.classList.toggle('invalid', value.length > 0 && !isValid);
+        return isValid;
+    }
+
+    function validateBarangay() {
+        const value = barangay.value;
+        const isValid = value !== '';
+        barangay.classList.toggle('valid', isValid);
+        barangay.classList.toggle('invalid', !isValid && barangay.selectedIndex > 0);
+        return isValid;
+    }
+
+    function checkFormValidity() {
+        const isValid = validateFirstName() && validateLastName() && 
+                       validateEmail() && validatePhoneNumber() && validateBarangay();
+        continueBtn.disabled = !isValid;
+        return isValid;
+    }
+
+    // Add event listeners
+    firstName.addEventListener('input', checkFormValidity);
+    lastName.addEventListener('input', checkFormValidity);
+    email.addEventListener('input', checkFormValidity);
+    phoneNumber.addEventListener('input', checkFormValidity);
+    barangay.addEventListener('change', checkFormValidity);
+
+    // Initial check
+    checkFormValidity();
+});
+
 function nextStep() {
+    // Double-check validation before proceeding
+    const firstName = document.querySelector('input[name="first_name"]').value.trim();
+    const lastName = document.querySelector('input[name="last_name"]').value.trim();
+    const email = document.querySelector('input[name="email"]').value.trim();
+    const phoneNumber = document.querySelector('input[name="phone_number"]').value.trim();
+    const barangay = document.querySelector('select[name="barangay_id"]').value;
+
+    if (!firstName || !lastName || !email || !phoneNumber || !barangay) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+
+    if (!/^\d{10,11}$/.test(phoneNumber)) {
+        alert('Phone number must be 10-11 digits.');
+        return;
+    }
+
     document.getElementById("info").classList.add("hidden");
     document.getElementById("pass").classList.remove("hidden");
 }
+
 function prevStep() {
     document.getElementById("pass").classList.add("hidden");
     document.getElementById("info").classList.remove("hidden");

@@ -1,14 +1,22 @@
 <?php
 session_start();
+require_once '../classes/database.php';
 
-// 🔒 ROLE CHECK
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sk_secretary') {
     header("Location: ../login.php");
     exit();
 }
+// OPTIONAL: dynamic user name
+$user_name = $_SESSION['name'] ?? 'Sk Secretary';
 
-// OPTIONAL: dynamic name
-$user_name = $_SESSION['name'] ?? 'Secretary';
+$db = new Database();
+$user = $db->getUserById($_SESSION['user_id']);
+
+$full_name = 'User';
+
+if ($user) {
+    $full_name = $user['first_name'] . ' ' . $user['last_name'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -96,7 +104,7 @@ $user_name = $_SESSION['name'] ?? 'Secretary';
 
     </div>
 
-    <!-- MAIN -->
+   <!-- MAIN -->
     <div class="flex-1 flex flex-col">
 
         <!-- TOPBAR -->
@@ -105,9 +113,50 @@ $user_name = $_SESSION['name'] ?? 'Secretary';
             <input type="text" placeholder="Search..." 
                 class="px-4 py-2 rounded-full text-black w-1/3 focus:outline-none">
 
-            <div class="flex items-center gap-3">
-                <span>🔔</span>
-                <span class="font-semibold"><?php echo htmlspecialchars($user_name); ?></span>
+            <div class="flex items-center gap-3 relative">
+
+                <!-- NOTIFICATION -->
+                <div class="relative">
+                    <button id="notifBtn" class="text-xl hover:bg-red-500 p-2 rounded-lg transition">
+                        🔔
+                    </button>
+
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-xl border z-50 overflow-hidden">
+                        <div class="px-4 py-3 font-semibold border-b text-gray-800">
+                            Notifications
+                        </div>
+
+                        <div class="max-h-64 overflow-y-auto">
+                            <div class="px-4 py-3 hover:bg-gray-100 text-sm text-gray-700">
+                                No notifications yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USER MENU -->
+                <div class="relative">
+                    <button id="userMenuBtn" class="flex items-center gap-2 hover:bg-red-500 px-3 py-2 rounded-lg transition">
+                        <span class="font-semibold"><?= htmlspecialchars($full_name) ?></span>
+                    </button>
+
+                    <div id="userDropdown" class="hidden absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border overflow-hidden z-50">
+                        <div class="px-5 py-4 font-semibold text-gray-800 border-b">
+                            My Account
+                        </div>
+
+                        <a href="profile.php" class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition">
+                            <span>👤</span>
+                            <span class="text-gray-700">Profile Settings</span>
+                        </a>
+
+                        <a href="../auth/logout.php" class="flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-gray-100 transition">
+                            <span>↩️</span>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -204,5 +253,36 @@ $user_name = $_SESSION['name'] ?? 'Secretary';
 
 </div>
 
+
+<script>
+    const notifBtn = document.getElementById('notifBtn');
+    const notifDropdown = document.getElementById('notifDropdown');
+
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+
+    notifBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('hidden');
+        userDropdown.classList.add('hidden');
+    });
+
+    userMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        userDropdown.classList.toggle('hidden');
+        notifDropdown.classList.add('hidden');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+            notifDropdown.classList.add('hidden');
+        }
+
+        if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+            userDropdown.classList.add('hidden');
+        }
+    });
+
+</script>
 </body>
 </html>
