@@ -16,6 +16,24 @@ $full_name = 'User';
 if ($user) {
     $full_name = trim($user['first_name'] . ' ' . $user['last_name']);
 }
+
+$menuItems = [
+    ['home.php', '🏠', 'Home'],
+    ['dashboard.php', '📊', 'Dashboard'],
+    ['consolidation.php', '📁', 'Consolidation'],
+    ['module.php', '⚙️', 'Module Management'],
+    ['announcements.php', '📢', 'Announcements'],
+    ['calendar.php', '📅', 'Calendar'],
+    ['chat.php', '💬', 'Chat'],
+    ['meetings.php', '📞', 'Meetings'],
+    ['rankings.php', '🏆', 'Rankings'],
+    ['analytics.php', '📈', 'Analytics'],
+    ['leadership.php', '👥', 'Leadership'],
+    ['archive.php', '🗂️', 'Archive'],
+    ['user_management.php', '👤', 'User Management'],
+];
+
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,8 +43,6 @@ if ($user) {
     <title>SK 360 Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- ADDED: React CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -56,70 +72,13 @@ if ($user) {
 
         <!-- MENU -->
         <nav class="space-y-1 text-xs">
-            <a href="home.php" class="flex items-center gap-2 bg-red-500 p-2 rounded-lg">
-                <span class="bg-yellow-400 text-red-600 p-1 rounded text-sm">🏠</span>
-                <span class="text-yellow-300 font-semibold text-xs">Home</span>
-            </a>
-
-            <a href="dashboard.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg transition">
-                <span class="bg-red-400 p-1 rounded text-sm">📊</span>
-                <span class="text-xs">Dashboard</span>
-            </a>
-
-            <a href="consolidation.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">📁</span>
-                <span class="text-xs">Consolidation</span>
-            </a>
-
-            <a href="module.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">⚙️</span>
-                <span class="text-xs">Module Management</span>
-            </a>
-
-            <a href="announcements.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">📢</span>
-                <span class="text-xs">Announcements</span>
-            </a>
-
-            <a href="calendar.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">📅</span>
-                <span class="text-xs">Calendar</span>
-            </a>
-
-            <a href="chat.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">💬</span>
-                <span class="text-xs">Chat</span>
-            </a>
-
-            <a href="meetings.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">📞</span>
-                <span class="text-xs">Meetings</span>
-            </a>
-
-            <a href="rankings.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">🏆</span>
-                <span class="text-xs">Rankings</span>
-            </a>
-
-            <a href="analytics.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">📈</span>
-                <span class="text-xs">Analytics</span>
-            </a>
-
-            <a href="leadership.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">👥</span>
-                <span class="text-xs">Leadership</span>
-            </a>
-
-            <a href="archive.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">🗂️</span>
-                <span class="text-xs">Archive</span>
-            </a>
-
-            <a href="user_management.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
-                <span class="bg-red-400 p-1 rounded text-sm">👤</span>
-                <span class="text-xs">User Management</span>
-            </a>
+            <?php foreach ($menuItems as [$link, $icon, $label]): ?>
+                <?php $isActive = $currentPage === $link; ?>
+                <a href="<?= $link ?>" class="flex items-center gap-2 p-2 rounded-lg <?= $isActive ? 'bg-red-500' : 'hover:bg-red-500 transition' ?>">
+                    <span class="<?= $isActive ? 'bg-yellow-400 text-red-600' : 'bg-red-400' ?> p-1 rounded text-sm"><?= $icon ?></span>
+                    <span class="<?= $isActive ? 'text-yellow-300 font-semibold' : '' ?> text-xs"><?= $label ?></span>
+                </a>
+            <?php endforeach; ?>
         </nav>
     </div>
 
@@ -319,8 +278,7 @@ if ($user) {
                                 <select name="post_visibility" class="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400">
                                     <option value="all_sk_councils">All SK Councils</option>
                                     <option value="chairman_only">SK Chairman Only</option>
-                                    <option value="secretary_only">SK Secretary Only</option>
-                                    <option value="federation_only">Federation Only</option>
+                                    <option value="secretary_only">All Users</option>
                                 </select>
                                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">⌄</span>
                             </div>
