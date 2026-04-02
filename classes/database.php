@@ -107,4 +107,93 @@ class Database {
         $stmt->execute([$user_id]);
         return $stmt->fetch();
     }
+
+    // CREATE SLOT
+public function createSlot($type, $title, $desc, $role, $start, $end) {
+    $conn = $this->openConnection();
+
+    $stmt = $conn->prepare("
+        INSERT INTO submission_slots 
+        (submission_type, title, description, role, start_date, end_date)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+
+    return $stmt->execute([$type, $title, $desc, $role, $start, $end]);
+}
+
+// GET ALL SLOTS
+public function getSlots() {
+    $conn = $this->openConnection();
+
+    $stmt = $conn->query("SELECT * FROM submission_slots ORDER BY slot_id DESC");
+    return $stmt->fetchAll();
+}
+
+// DELETE SLOT
+public function deleteSlot($id) {
+    $conn = $this->openConnection();
+
+    $stmt = $conn->prepare("DELETE FROM submission_slots WHERE slot_id = ?");
+    return $stmt->execute([$id]);
+}
+
+//Event calendar
+// CREATE EVENT
+public function createEvent($title, $event_type, $start, $end, $description = null, $created_by = null) {
+    $conn = $this->openConnection();
+
+    $stmt = $conn->prepare("
+        INSERT INTO events 
+        (title, description, event_type, start_datetime, end_datetime, created_by)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+
+    return $stmt->execute([
+        $title,
+        $description,
+        $event_type,
+        $start,
+        $end,
+        $created_by
+    ]);
+}
+
+// GET ALL EVENTS
+public function getEvents() {
+    $conn = $this->openConnection();
+
+    $stmt = $conn->query("
+        SELECT event_id, title, event_type, start_datetime, end_datetime
+        FROM events
+        ORDER BY start_datetime ASC
+    ");
+
+    return $stmt->fetchAll();
+}
+
+// GET UPCOMING EVENTS
+public function getUpcomingEvents($limit = 5) {
+    $conn = $this->openConnection();
+
+    $stmt = $conn->prepare("
+        SELECT event_id, title, event_type, start_datetime, end_datetime, description
+        FROM events
+        WHERE DATE(start_datetime) >= CURDATE()
+        ORDER BY start_datetime ASC
+        LIMIT ?
+    ");
+    $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll();
+}
+
+// DELETE EVENT
+public function deleteEvent($event_id) {
+    $conn = $this->openConnection();
+
+    $stmt = $conn->prepare("DELETE FROM events WHERE event_id = ?");
+    return $stmt->execute([$event_id]);
+}
+
 }

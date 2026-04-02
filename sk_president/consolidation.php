@@ -2,19 +2,18 @@
 session_start();
 require_once '../classes/database.php';
 
-// auth check
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sk_president') {
     header("Location: ../login.php");
     exit();
 }
 
-// login user
 $db = new Database();
 $user = $db->getUserById($_SESSION['user_id']);
 
 $full_name = 'User';
 if ($user) {
     $full_name = trim($user['first_name'] . ' ' . $user['last_name']);
+    
 }
 
 $menuItems = [
@@ -35,44 +34,36 @@ $menuItems = [
 
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SK 360 Dashboard</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Consolidation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
 <body class="bg-gray-100">
 
-<div class="flex h-screen">
+<div class="flex h-screen overflow-hidden">
 
-   <!-- SIDEBAR -->
-<div class="w-64 bg-red-600 text-white flex flex-col p-3 overflow-y-auto">
+    <!-- SIDEBAR -->
+    <div class="w-64 bg-red-600 text-white flex flex-col p-3 overflow-y-auto">
 
-    <!-- LOGO -->
-    <div class="flex items-center gap-2 mb-3">
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" 
-             class="w-7 h-7" alt="logo">
-        <h2 class="text-base font-bold">SK 360°</h2>
-    </div>
-
-    <!-- PROFILE CARD -->
-    <div class="bg-red-500 rounded-lg p-2 flex items-center gap-2 mb-3 shadow text-xs">
-        <div class="bg-yellow-400 text-red-600 p-1 rounded-full text-sm">
-            👤
+        <!-- LOGO -->
+        <div class="flex items-center gap-2 mb-3">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-7 h-7" alt="logo">
+            <h2 class="text-base font-bold">SK 360°</h2>
         </div>
-        <div>
-            <p class="font-semibold text-xs">SK President</p>
-            <p class="text-xs opacity-80">Active Role</p>
-        </div>
-    </div>
 
-   <!-- MENU -->
+        <!-- PROFILE CARD -->
+        <div class="bg-red-500 rounded-lg p-2 flex items-center gap-2 mb-3 shadow text-xs">
+            <div class="bg-yellow-400 text-red-600 p-1 rounded-full text-sm">👤</div>
+            <div>
+                <p class="font-semibold text-xs">SK President</p>
+                <p class="text-xs opacity-80">Active Role</p>
+            </div>
+        </div>
+
         <nav class="space-y-1 text-xs">
             <?php foreach ($menuItems as [$link, $icon, $label]): ?>
                 <?php $isActive = $currentPage === $link; ?>
@@ -84,7 +75,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </nav>
     </div>
 
-       <!-- MAIN -->
+    <!-- MAIN -->
     <div class="flex-1 flex flex-col">
 
         <!-- TOPBAR -->
@@ -143,99 +134,105 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </div>
 
         <!-- CONTENT -->
-        <div class="flex-1 bg-gray-100 p-8 overflow-y-auto">
-            
-            <!-- WELCOME TEXT -->
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">
-                Welcome back, SK President
-            </h1>
-            <p class="text-gray-600 text-lg mb-8">
-                Here's an overview of SK activities and submissions as of 1/25/2026
-            </p>
+        <main class="flex-1 overflow-y-auto p-10 bg-gray-100">
 
-            <!-- CARDS -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-
-                <!-- CARD 1 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-sm text-gray-500">Total Users</p>
-                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
-                        </div>
-                        <div class="bg-red-100 p-3 rounded-xl">
-                            <span class="text-red-500 text-xl">👥</span>
-                        </div>
-                    </div>
-                    <div class="text-sm text-gray-500 leading-5 mb-3">
-                        <p>0 officials,</p>
-                        <p>0 youth</p>
-                    </div>
-                    <p class="text-sm text-green-500">↗ +0 this month</p>
-                </div>
-
-                <!-- CARD 2 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-sm text-gray-500">Lipa Youth</p>
-                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
-                        </div>
-                        <div class="bg-yellow-100 p-3 rounded-xl">
-                            <span class="text-yellow-500 text-xl">👤</span>
-                        </div>
-                    </div>
-                    <div class="text-sm text-gray-500 leading-5 mb-3">
-                        <p>0 active</p>
-                        <p>members</p>
-                    </div>
-                    <p class="text-sm text-green-500">↗ +0 new signups</p>
-                </div>
-
-                <!-- CARD 3 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-sm text-gray-500">SK Chairmen</p>
-                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
-                        </div>
-                        <div class="bg-green-100 p-3 rounded-xl">
-                            <span class="text-green-500 text-xl">🛡️</span>
-                        </div>
-                    </div>
-                    <div class="text-sm text-gray-500 leading-5 mb-3">
-                        <p>Across 0</p>
-                        <p>barangays</p>
-                    </div>
-                    <p class="text-sm text-green-500">↗ 0% coverage</p>
-                </div>
-
-                <!-- CARD 4 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-sm text-gray-500">SK Secretaries</p>
-                            <h2 class="text-4xl font-bold text-gray-900 leading-none">0</h2>
-                        </div>
-                        <div class="bg-blue-100 p-3 rounded-xl">
-                            <span class="text-blue-500 text-xl">📄</span>
-                        </div>
-                    </div>
-                    <div class="text-sm text-gray-500 leading-5 mb-3">
-                        <p>0</p>
-                        <p>remaining</p>
-                    </div>
-                    <p class="text-sm text-green-500">↗ 0% staffed</p>
-                </div>
-
+            <!-- HEADER -->
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">Report Consolidation</h1>
+                <p class="text-gray-600 text-lg">
+                    Centralized view of all barangay submissions and report compilation
+                </p>
             </div>
-        </div>
 
+            <!-- STATS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-2">Total Barangays</p>
+                    <h2 class="text-4xl font-bold text-gray-800">0</h2>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-2">Submitted</p>
+                    <h2 class="text-4xl font-bold text-green-500">0</h2>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-2">Pending</p>
+                    <h2 class="text-4xl font-bold text-yellow-500">0</h2>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-2">Late</p>
+                    <h2 class="text-4xl font-bold text-red-500">0</h2>
+                </div>
+            </div>
+
+            <!-- MAIN TABLE CARD -->
+            <section class="bg-white rounded-2xl shadow-sm p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Barangay Submissions</h2>
+                        <p class="text-gray-500 text-sm">
+                            Track and consolidate reports from all barangays
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium">
+                            📄 Generate Report
+                        </button>
+                        <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium">
+                            ⬇ Download All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- FILTERS -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+                    <div class="w-full max-w-sm">
+                        <div class="border rounded-xl px-4 py-3 flex items-center gap-3">
+                            <span class="text-gray-400">🔎</span>
+                            <input
+                                type="text"
+                                placeholder="Search barangay..."
+                                class="w-full outline-none text-sm"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="w-full md:w-48">
+                        <select class="w-full border rounded-xl px-4 py-3 text-sm text-gray-600 outline-none bg-white">
+                            <option>Month</option>
+                            <option>January 2026</option>
+                            <option>February 2026</option>
+                            <option>March 2026</option>     
+                        </select>
+                    </div>
+                </div>
+
+                <!-- TABLE -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left border-separate border-spacing-y-2">
+                        <thead>
+                            <tr class="text-gray-500">
+                                <th class="px-4 py-3">Barangay</th>
+                                <th class="px-4 py-3">Monthly</th>
+                                <th class="px-4 py-3">Quarterly</th>
+                                <th class="px-4 py-3">Annual</th>
+                                <th class="px-4 py-3">Last Submission</th>
+                                <th class="px-4 py-3 text-center">Actions</th>
+                            </tr>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
     </div>
+</div>
 
-    </div>
-
-    <script>
+<script>
     const notifBtn = document.getElementById('notifBtn');
     const notifDropdown = document.getElementById('notifDropdown');
 
@@ -265,5 +262,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     });
 
 </script>
+
 </body>
 </html>
