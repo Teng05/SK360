@@ -5,9 +5,7 @@ session_start();
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/PHPMailer.php';
-require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/SMTP.php';
-require_once __DIR__ . '/../phpmailer/phpmailer/phpmailer/src/Exception.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $db = new Database();
 $errors = [];

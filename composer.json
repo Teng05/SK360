@@ -1,0 +1,12 @@
+{
+    "name": "marielleo.bautista/sk360",
+    "authors": [
+        {
+            "name": "mxrxelle",
+            "email": "bautistamarielle1226@gmail.com"
+        }
+    ],
+    "require": {
+        "phpmailer/phpmailer": "^7.0"
+    }
+}
