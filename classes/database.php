@@ -108,4 +108,202 @@ class Database {
 
         return false;
     }
+
+
+    public function getUserById($user_id) {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("SELECT user_id, first_name, last_name, role FROM users WHERE user_id = ? LIMIT 1");
+        $stmt->execute([$user_id]);
+        return $stmt->fetch();
+    }
+
+     // CREATE SLOT
+    public function createSlot($type, $title, $desc, $role, $start, $end) {
+        $conn = $this->openConnection();
+
+        $stmt = $conn->prepare("
+            INSERT INTO submission_slots 
+            (submission_type, title, description, role, start_date, end_date)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+
+        return $stmt->execute([$type, $title, $desc, $role, $start, $end]);
+    }
+
+    // GET ALL SLOTS
+    public function getSlots() {
+        $conn = $this->openConnection();
+
+        $stmt = $conn->query("SELECT * FROM submission_slots ORDER BY slot_id DESC");
+        return $stmt->fetchAll();
+    }
+
+    // DELETE SLOT
+    public function deleteSlot($id) {
+        $conn = $this->openConnection();
+
+        $stmt = $conn->prepare("DELETE FROM submission_slots WHERE slot_id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    //Event calendar
+    // CREATE EVENT
+    public function createEvent($title, $event_type, $start, $end, $description = null, $created_by = null) {
+        $conn = $this->openConnection();
+
+        $stmt = $conn->prepare("
+            INSERT INTO events 
+            (title, description, event_type, start_datetime, end_datetime, created_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+
+        return $stmt->execute([
+            $title,
+            $description,
+            $event_type,
+            $start,
+            $end,
+            $created_by
+        ]);
+    }
+
+    // GET ALL EVENTS
+    public function getEvents() {
+        $conn = $this->openConnection();
+
+        $stmt = $conn->query("
+            SELECT event_id, title, event_type, start_datetime, end_datetime
+            FROM events
+            ORDER BY start_datetime ASC
+        ");
+
+        return $stmt->fetchAll();
+    }
+
+    // GET UPCOMING EVENTS
+    public function getUpcomingEvents($limit = 5) {
+        $conn = $this->openConnection();
+
+        $stmt = $conn->prepare("
+            SELECT event_id, title, event_type, start_datetime, end_datetime, description
+            FROM events
+            WHERE DATE(start_datetime) >= CURDATE()
+            ORDER BY start_datetime ASC
+            LIMIT ?
+        ");
+        $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    // DELETE EVENT
+    public function deleteEvent($event_id) {
+        $conn = $this->openConnection();
+
+        $stmt = $conn->prepare("DELETE FROM events WHERE event_id = ?");
+        return $stmt->execute([$event_id]);
+    }
+
+    // --- ADD THESE TO YOUR DATABASE CLASS ---
+
+    // 1. Fetch the single most recent announcement
+    public function getLatestAnnouncement() {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("SELECT * FROM announcements ORDER BY created_at DESC LIMIT 1");
+        $stmt->execute();
+        return $stmt->fetch();
+    }
+
+    // 3. Fetch Barangay Rank from your rankings table
+    public function getBarangayRank($barangay_id) {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("SELECT ranking_id FROM rankings WHERE barangay_id = ? ORDER BY created_at DESC LIMIT 1");
+        $stmt->execute([$barangay_id]);
+        $rank = $stmt->fetch();
+        return $rank ? "#" . $rank['ranking_id'] : "N/A";
+    }
+
+    public function getAllAnnouncements() {
+        try {
+            // We fetch the latest announcements first using ORDER BY created_at DESC
+            $sql = "SELECT * FROM announcements ORDER BY created_at DESC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            // If there's an error, return an empty array so the page doesn't crash
+            return [];
+        }
+    }
+
+    // --- ADD THESE TO YOUR DATABASE CLASS ---
+
+    public function getUserByEmailOrPhone($identifier) {
+        $conn = $this->openConnection();
+        // Your SQL uses email and phone_number
+        $stmt = $conn->prepare("SELECT user_id, email, phone_number FROM users WHERE email = ? OR phone_number = ? LIMIT 1");
+        $stmt->execute([$identifier, $identifier]);
+        return $stmt->fetch();
+    }
+
+    public function storeResetCode($user_id, $code, $method) {
+        $conn = $this->openConnection();
+        
+        // Clean up old requests for this user
+        $stmt = $conn->prepare("DELETE FROM password_resets WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+
+        // Insert into your password_resets table
+        $stmt = $conn->prepare("
+            INSERT INTO password_resets (user_id, reset_code, method, expires_at, created_at) 
+            VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE), NOW())
+        ");
+        return $stmt->execute([$user_id, $code, $method]);
+    }
+
+    // Updated to use the correct connection method and the password_resets table
+    public function storeResetToken($user_id, $token, $method) {
+        $conn = $this->openConnection();
+        
+        // Clean up old codes/tokens for this user
+        $stmt = $conn->prepare("DELETE FROM password_resets WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+
+        // Insert the long token instead of a 6-digit code
+        $stmt = $conn->prepare("
+            INSERT INTO password_resets (user_id, reset_token, method, expires_at, created_at) 
+            VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE), NOW())
+        ");
+        return $stmt->execute([$user_id, $token, $method]);
+    }
+
+    public function getUserByToken($token) {
+        $conn = $this->openConnection();
+        // Join with users table so we get the user's info immediately
+        $stmt = $conn->prepare("
+            SELECT u.* FROM users u 
+            JOIN password_resets p ON u.user_id = p.user_id 
+            WHERE p.reset_token = ? AND p.expires_at > NOW() 
+            LIMIT 1
+        ");
+        $stmt->execute([$token]);
+        return $stmt->fetch();
+    }
+    
+    // You also need this to actually save the new password later
+    public function updatePassword($user_id, $new_password) {
+        $conn = $this->openConnection();
+        $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE user_id = ?");
+        $result = $stmt->execute([$hashed, $user_id]);
+        
+        if($result) {
+            // Delete the token so it can't be used again
+            $stmt = $conn->prepare("DELETE FROM password_resets WHERE user_id = ?");
+            $stmt->execute([$user_id]);
+        }
+        return $result;
+    }
 }

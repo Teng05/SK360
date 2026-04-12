@@ -24,19 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             //  ROLE-BASED REDIRECT (SERVER SIDE)
             switch ($user['role']) {
                 case 'youth':
-                    header("Location: ../youth/dashboard.php");
+                    header("Location: ../youth/home.php");
                     break;
 
                 case 'sk_president':
-                    header("Location: ../Pres/dashboard.php");
+                    header("Location: ../sk_president/home.php");
                     break;
 
                 case 'sk_chairman':
-                    header("Location: ../chairman/dashboard.php");
+                    header("Location: ../sk_chairman/home.php");
                     break;
 
                 case 'sk_secretary':
-                    header("Location: ../secretary/dashboard.php");
+                    header("Location: ../sk_secretary/home.php");
                     break;
 
                 default:
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label>
                     <input type="checkbox" name="remember"> Remember me
                 </label>
-                <a href="#">Forgot Password?</a>
+                <a href="resetpass.php">Forgot Password?</a>
             </div>
 
             <button class="login-btn" type="submit">Sign In</button>
