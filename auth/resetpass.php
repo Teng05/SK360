@@ -2,10 +2,44 @@
 session_start();
 require_once '../classes/database.php';
 
+use Twilio\Rest\Client;
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$db = new Database();
+$conn = $db->openConnection();
+
+$message = "";
+
+/* TWILIO CONFIG */
+$twilioSid = 'YOUR_NEW_ACCOUNT_SID';
+$twilioToken = 'YOUR_NEW_AUTH_TOKEN';
+$verifyServiceSid = 'YOUR_VERIFY_SERVICE_SID';
+
+/* HANDLE SMS REQUEST */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['phone'])) {
+
+    $phone = trim($_POST['phone']);
+
+    if (!empty($phone)) {
+        try {
+            $twilio = new Client($twilioSid, $twilioToken);
+
+            $twilio->verify->v2->services($verifyServiceSid)
+                ->verifications
+                ->create($phone, "sms");
+
+            $_SESSION['reset_phone'] = $phone;
+
+            echo "<script>window.onload = function(){ showSuccess('phone'); }</script>";
+
+        } catch (Exception $e) {
+            $message = "Failed to send SMS: " . $e->getMessage();
+        }
+    } else {
+        $message = "Phone number is required.";
+    }
+}
 ?>
-<?php if (!empty($message)): ?>
-    <div class="text-danger mb-3"><?= htmlspecialchars($message) ?></div>
-<?php endif; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
