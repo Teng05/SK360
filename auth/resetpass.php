@@ -1,3 +1,11 @@
+<?php
+session_start();
+require_once '../classes/database.php';
+
+?>
+<?php if (!empty($message)): ?>
+    <div class="text-danger mb-3"><?= htmlspecialchars($message) ?></div>
+<?php endif; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -216,11 +224,16 @@
                     <label class="form-label-custom">
                         <span class="label-icon"><i class="bi bi-phone"></i></span> Phone Number
                     </label>
-                    <input type="text" class="form-control form-control-custom" placeholder="+63912345678">
-                    <button class="btn btn-sk-primary" onclick="showSuccess('phone')">Send Reset Code</button>
+                    <form method="POST">
+    <input type="text" name="phone" class="form-control form-control-custom" placeholder="+63912345678" required>
+    
+    <button type="submit" class="btn btn-sk-primary">
+        Send Reset Code
+    </button>
+</form>
                 </div>
 
-                <a href="#" class="back-link"><i class="bi bi-arrow-left"></i> Back to Login</a>
+                <a href="login.php" class="back-link"><i class="bi bi-arrow-left"></i> Back to Login</a>
             </div>
         </div>
 
