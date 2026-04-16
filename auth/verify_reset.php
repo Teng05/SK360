@@ -9,20 +9,13 @@ $error = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code = trim($_POST['code']);
     
-    $conn = $db->openConnection();
-    
-    // 1. Check if code exists and is not expired
-    $stmt = $conn->prepare("SELECT user_id, reset_id FROM password_resets WHERE reset_code = ? AND expires_at > NOW() LIMIT 1");
-    $stmt->execute([$code]);
-    $reset = $stmt->fetch();
+    // Call the new method
+    $reset = $db->verifyResetCode($code);
 
     if ($reset) {
+        // SUCCESS: Set session flags
         $_SESSION['reset_user_id'] = $reset['user_id'];
         $_SESSION['code_verified'] = true; 
-
-        // Use your actual column name 'reset_id'
-        $del = $conn->prepare("DELETE FROM password_resets WHERE reset_id = ?");
-        $del->execute([$reset['reset_id']]);
 
         header("Location: update_password.php");
         exit();

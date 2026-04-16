@@ -295,15 +295,53 @@ class Database {
     // You also need this to actually save the new password later
     public function updatePassword($user_id, $new_password) {
         $conn = $this->openConnection();
-        $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE user_id = ?");
-        $result = $stmt->execute([$hashed, $user_id]);
         
-        if($result) {
-            // Delete the token so it can't be used again
-            $stmt = $conn->prepare("DELETE FROM password_resets WHERE user_id = ?");
-            $stmt->execute([$user_id]);
-        }
-        return $result;
+        // Hash the password for security
+        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+        
+        $sql = "UPDATE users SET password = ? WHERE user_id = ?";
+        $stmt = $conn->prepare($sql);
+        
+        return $stmt->execute([$hashed_password, $user_id]);
     }
+
+    // Inside classes/database.php
+
+    public function getUserByEmail($email) {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("SELECT user_id, first_name FROM users WHERE email = ? LIMIT 1");
+        $stmt->execute([$email]);
+        return $stmt->fetch();
+    }
+
+    public function saveResetCode($user_id, $code, $method = 'email') {
+        $conn = $this->openConnection();
+        // Using DATE_ADD(NOW()...) here fixes the timezone issues we discussed
+        $sql = "INSERT INTO password_resets (user_id, reset_code, method, expires_at) 
+                VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE))";
+        $stmt = $conn->prepare($sql);
+        return $stmt->execute([$user_id, $code, $method]);
+    }
+
+    public function verifyResetCode($code) {
+        $conn = $this->openConnection();
+        
+        // Check if code exists and is not expired
+        $sql = "SELECT user_id, reset_id FROM password_resets 
+                WHERE reset_code = ? AND expires_at > NOW() LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$code]);
+        $reset = $stmt->fetch();
+
+        if ($reset) {
+            // Delete the code immediately so it can't be used again
+            $del = $conn->prepare("DELETE FROM password_resets WHERE reset_id = ?");
+            $del->execute([$reset['reset_id']]);
+            
+            return $reset; // Returns array with user_id and reset_id
+        }
+        
+        return false;
+    }
+    
 }

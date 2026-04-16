@@ -2,7 +2,7 @@
 session_start();
 require_once '../classes/database.php';
 
-// Security check: If they didn't come from verify_reset.php, kick them out
+// Security check
 if (!isset($_SESSION['reset_user_id']) || !isset($_SESSION['code_verified'])) {
     header("Location: resetpass.php");
     exit();
@@ -16,28 +16,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_pass = $_POST['password'];
     $confirm_pass = $_POST['confirm_password'];
 
-    if ($new_pass === $confirm_pass) {
-        if (strlen($new_pass) >= 8) {
-            $conn = $db->openConnection();
-            
-            // Hash the password
-            $hashed_password = password_hash($new_pass, PASSWORD_DEFAULT);
-            $user_id = $_SESSION['reset_user_id'];
-
-            // Update the users table (ensure your column name is 'password')
-            $stmt = $conn->prepare("UPDATE users SET password = ? WHERE user_id = ?");
-            if ($stmt->execute([$hashed_password, $user_id])) {
-                $success = true;
-                // Clear sessions so they can't reuse the reset state
-                session_destroy();
-            } else {
-                $message = "Database error. Please try again.";
-            }
-        } else {
-            $message = "Password must be at least 8 characters long.";
-        }
-    } else {
+    // 1. Validation Logic
+    if ($new_pass !== $confirm_pass) {
         $message = "Passwords do not match!";
+    } elseif (strlen($new_pass) < 8) {
+        $message = "Password must be at least 8 characters long.";
+    } else {
+        // 2. Database Logic (Calling the class method)
+        $user_id = $_SESSION['reset_user_id'];
+        
+        if ($db->updatePassword($user_id, $new_pass)) {
+            $success = true;
+            // Clear sessions to prevent re-entry
+            session_destroy();
+        } else {
+            $message = "Database error. Please try again.";
+        }
     }
 }
 ?>

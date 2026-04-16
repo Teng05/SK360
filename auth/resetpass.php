@@ -21,61 +21,61 @@ $twilioSid = 'YOUR_NEW_ACCOUNT_SID';
 $twilioToken = 'YOUR_NEW_AUTH_TOKEN';
 $verifyServiceSid = 'YOUR_VERIFY_SERVICE_SID';
 
+/* HANDLE REQUESTS */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
+    // 1. HANDLE EMAIL REQUEST
     if (isset($_POST['email'])) {
         $email = trim($_POST['email']);
         
         if (!empty($email)) {
-            $stmt = $conn->prepare("SELECT user_id, first_name FROM users WHERE email = ? LIMIT 1");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
+            // Refactored: Call class method instead of writing SQL
+            $user = $db->getUserByEmail($email);
             
             if ($user) {
-                $user_id = $user['user_id'];
                 $verificationCode = random_int(100000, 999999);
 
-                // FIX: Let MySQL calculate the expiration based on ITS OWN current time (NOW())
-                $ins = $conn->prepare("INSERT INTO password_resets (user_id, reset_code, method, expires_at) 
-                                       VALUES (?, ?, 'email', DATE_ADD(NOW(), INTERVAL 15 MINUTE))");
-                $ins->execute([$user_id, $verificationCode]);
-                
-                $_SESSION['reset_email'] = $email;
-                $_SESSION['reset_user_id'] = $user_id;
+                // Refactored: Save code via class method
+                if ($db->saveResetCode($user['user_id'], $verificationCode, 'email')) {
+                    
+                    $_SESSION['reset_email'] = $email;
+                    $_SESSION['reset_user_id'] = $user['user_id'];
 
-                try {
-                    $mail = new PHPMailer(true);
-                    $mail->isSMTP();
-                    $mail->Host       = 'smtp.gmail.com';
-                    $mail->SMTPAuth   = true;
-                    $mail->Username   = 'paulmonje123@gmail.com'; 
-                    $mail->Password   = 'vrffgqfdpautwxsf';    
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port       = 587;
+                    try {
+                        $mail = new PHPMailer(true);
+                        $mail->isSMTP();
+                        $mail->Host       = 'smtp.gmail.com';
+                        $mail->SMTPAuth   = true;
+                        $mail->Username   = 'paulmonje123@gmail.com'; 
+                        $mail->Password   = 'vrffgqfdpautwxsf';    
+                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                        $mail->Port       = 587;
 
-                    $mail->setFrom('paulmonje123@gmail.com', 'SK360 Support');
-                    $mail->addAddress($email, $user['first_name']);
+                        $mail->setFrom('paulmonje123@gmail.com', 'SK360 Support');
+                        $mail->addAddress($email, $user['first_name']);
 
-                    $mail->isHTML(true);
-                    $mail->Subject = 'SK360 Password Reset Code';
-                    $mail->Body    = "
-                        <div style='font-family: Arial, sans-serif; text-align: center; border: 1px solid #ddd; padding: 20px; border-radius: 15px;'>
-                            <h2 style='color: #d32f2f;'>Reset Your Password</h2>
-                            <p>Hello {$user['first_name']}, use the code below to reset your password:</p>
-                            <h1 style='background: #f4f4f4; display: inline-block; padding: 10px 20px; letter-spacing: 5px; color: #333;'>{$verificationCode}</h1>
-                            <p style='font-size: 0.8rem; color: #777;'>This code will expire in 15 minutes.</p>
-                        </div>";
+                        $mail->isHTML(true);
+                        $mail->Subject = 'SK360 Password Reset Code';
+                        $mail->Body    = "
+                            <div style='font-family: Arial, sans-serif; text-align: center; border: 1px solid #ddd; padding: 20px; border-radius: 15px;'>
+                                <h2 style='color: #d32f2f;'>Reset Your Password</h2>
+                                <p>Hello {$user['first_name']}, use the code below to reset your password:</p>
+                                <h1 style='background: #f4f4f4; display: inline-block; padding: 10px 20px; letter-spacing: 5px; color: #333;'>{$verificationCode}</h1>
+                                <p style='font-size: 0.8rem; color: #777;'>This code will expire in 15 minutes.</p>
+                            </div>";
 
-                    $mail->send();
-                    echo "<script>window.onload = function(){ showSuccess('email', '$email'); }</script>";
-                } catch (Exception $e) {
-                    $message = "Mail Error: Check your SMTP settings.";
+                        $mail->send();
+                        echo "<script>window.onload = function(){ showSuccess('email', '$email'); }</script>";
+                    } catch (Exception $e) {
+                        $message = "Mail Error: Check your SMTP settings.";
+                    }
                 }
             } else {
                 $message = "No account found with that email address.";
             }
         }
     }
+}
 
     // 2. HANDLE SMS REQUEST (Twilio)
     if (isset($_POST['phone'])) {
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
