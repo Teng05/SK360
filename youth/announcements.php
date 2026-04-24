@@ -70,6 +70,9 @@ $announcements = $db->getAllAnnouncements();
             <a href="rankings.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
                 <span class="bg-red-400 p-1 rounded">🏆</span><span>Rankings</span>
             </a>
+            <a href="leadership.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+                <span class="bg-red-400 p-1 rounded">👥</span><span>Leadership</span>
+            </a>
         </nav>
     </div>
 

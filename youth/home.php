@@ -74,6 +74,9 @@ $brgy_rank = $db->getBarangayRank($barangay_id);
             <a href="rankings.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
                 <span class="bg-red-400 p-1 rounded">🏆</span><span>Rankings</span>
             </a>
+            <a href="leadership.php" class="flex items-center gap-2 hover:bg-red-500 p-2 rounded-lg">
+                <span class="bg-red-400 p-1 rounded">👥</span><span>Leadership</span>
+            </a>
         </nav>
     </div>
 
@@ -143,7 +146,9 @@ $brgy_rank = $db->getBarangayRank($barangay_id);
                             <?php if ($latest_ann): ?>
                             <div class="bg-white rounded-xl shadow overflow-hidden border">
                                 <div class="h-40 bg-gray-200 overflow-hidden">
-                                    <img src="../assets/uploads/<?php echo $latest_ann['image']; ?>" class="w-full h-full object-cover">
+                                    <img src="<?php echo !empty($latest_ann['image_path']) ? '../uploads/' . $latest_ann['image_path'] : '../assets/img/default-event.jpg'; ?>" 
+                                        alt="Announcement Image" 
+                                        class="w-full h-full object-cover">
                                 </div>
                                 <div class="p-4">
                                     <span class="bg-blue-100 text-blue-600 text-[8px] font-bold px-2 py-0.5 rounded uppercase">Latest Announcement</span>
@@ -151,7 +156,10 @@ $brgy_rank = $db->getBarangayRank($barangay_id);
                                     <p class="text-gray-500 text-xs mt-1 leading-relaxed">
                                         <?php echo substr(htmlspecialchars($latest_ann['content']), 0, 150); ?>...
                                     </p>
-                                    <a href="view_announcement.php?id=<?php echo $latest_ann['id']; ?>" class="mt-3 inline-block text-red-600 text-[10px] font-bold uppercase hover:underline">Read Full Article →</a>
+                                    <a href="view_announcement.php?id=<?php echo $latest_ann['announcement_id']; ?>" 
+                                    class="mt-3 inline-block text-red-600 text-[10px] font-bold uppercase hover:underline">
+                                    Read Full Article →
+                                    </a>
                                 </div>
                             </div>
                             <?php endif; ?>
@@ -170,12 +178,11 @@ $brgy_rank = $db->getBarangayRank($barangay_id);
                                         <p class="text-[9px] text-gray-400">📍 <?php echo htmlspecialchars($event['location'] ?? 'No Location'); ?></p>
                                     </div>
                                 </div>
-                                <a href="calendar.php" class="text-red-600 font-bold text-[9px] border border-red-600 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition">JOIN</a>
+                                <a href="calendar.php" class="text-red-600 font-bold text-[9px] border border-red-600 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition uppercase">Join</a>
                             </div>
                         </div>
                         <?php endforeach; ?>
                     </div>
-                </div>
 
                 <div class="space-y-6">
                     <div class="bg-white p-4 rounded-xl shadow border">

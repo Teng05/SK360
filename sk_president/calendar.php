@@ -35,7 +35,13 @@ $calendarEvents = array_map(fn($event) => [
     'id' => $event['event_id'],
     'title' => $event['title'],
     'start' => $event['start_datetime'],
-    'end' => $event['end_datetime']
+    'end' => $event['end_datetime'],
+    'className' => match($event['event_type']) {
+        'meeting'  => 'bg-blue-700',
+        'program'  => 'bg-green-600',
+        'deadline' => 'bg-red-600',
+        default    => 'bg-fuchsia-500'
+    }
 ], $events);
 
 $menuItems = [
@@ -56,13 +62,6 @@ $menuItems = [
 
 $currentPage = basename($_SERVER['PHP_SELF']);
 
-$typeColors = [
-    'meeting' => 'bg-blue-700',
-    'program' => 'bg-green-600',
-    'deadline' => 'bg-red-600',
-    'other' => 'bg-fuchsia-500'
-];
-
 $legendItems = [
     ['bg-blue-700', 'Meeting'],
     ['bg-green-600', 'Event'],
@@ -78,56 +77,22 @@ $legendItems = [
     <title>Event Calendar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
     <style>
-        .fc .fc-toolbar-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #374151;
-        }
-        .fc .fc-button {
-            background: #f3f4f6 !important;
-            border: none !important;
-            color: #6b7280 !important;
-            box-shadow: none !important;
-            padding: 0.35rem 0.65rem !important;
-        }
-        .fc .fc-button:hover {
-            background: #e5e7eb !important;
-        }
-        .fc .fc-daygrid-day {
-            background: #fff;
-        }
-        .fc .fc-daygrid-day-frame {
-            min-height: 90px;
-        }
-        .fc-theme-standard td,
-        .fc-theme-standard th,
-        .fc-theme-standard .fc-scrollgrid {
-            border-color: #e5e7eb;
-        }
-        .fc .fc-col-header-cell-cushion,
-        .fc .fc-daygrid-day-number {
-            color: #6b7280;
-            font-size: 12px;
-            text-decoration: none !important;
-        }
-        .fc-event {
-            border: none !important;
-            padding: 2px 6px !important;
-            border-radius: 6px !important;
-            font-size: 11px !important;
-        }
+        .fc .fc-toolbar-title { font-size: 1.1rem; font-weight: 700; color: #1f2937; text-transform: uppercase; }
+        .fc .fc-button { background: #ef4444 !important; border: none !important; color: #fff !important; font-size: 0.8rem !important; text-transform: uppercase; font-weight: bold; }
+        .fc .fc-button:hover { background: #dc2626 !important; }
+        .fc-event { border: none !important; padding: 3px 5px !important; border-radius: 4px !important; font-size: 10px !important; cursor: pointer; }
+        .fc .fc-daygrid-day-number { color: #6b7280; font-size: 12px; text-decoration: none !important; }
     </style>
 </head>
-<body class="bg-[#f1f5f9] overflow-hidden">
+<body class="bg-gray-100 overflow-hidden">
 
 <div class="flex h-screen">
 
-    <div class="w-64 bg-red-600 text-white flex flex-col p-3 overflow-y-auto">
+    <div class="w-64 bg-red-600 text-white flex flex-col p-3 overflow-y-auto border-r border-red-700">
         <div class="flex items-center gap-2 mb-3">
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-7 h-7" alt="logo">
             <h2 class="text-base font-bold">SK 360°</h2>
@@ -153,8 +118,9 @@ $legendItems = [
     </div>
 
     <div class="flex-1 flex flex-col">
-        <div class="bg-red-600 text-white px-6 py-3 flex justify-between items-center shadow">
-            <input type="text" placeholder="Search" class="px-4 py-2 rounded-full text-black w-1/3 focus:outline-none">
+
+        <div class="bg-red-600 text-white px-6 py-3 flex justify-between items-center shadow-md">
+            <input type="text" placeholder="Search" class="px-4 py-2 rounded-full text-black w-1/3 focus:outline-none text-sm">
 
             <div class="flex items-center gap-3 relative">
                 <div class="relative">
@@ -162,124 +128,122 @@ $legendItems = [
                     <div id="notifDropdown" class="hidden absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-xl border z-50 overflow-hidden">
                         <div class="px-4 py-3 font-semibold border-b text-gray-800">Notifications</div>
                         <div class="max-h-64 overflow-y-auto">
-                            <div class="px-4 py-3 hover:bg-gray-100 text-sm text-gray-700">No notifications yet</div>
+                            <div class="px-4 py-3 hover:bg-gray-100 text-sm text-gray-700 font-normal">No notifications yet</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="relative">
                     <button id="userMenuBtn" type="button" class="flex items-center gap-2 hover:bg-red-500 px-3 py-2 rounded-lg transition">
-                        <span class="font-semibold"><?= htmlspecialchars($full_name) ?></span>
+                        <span class="font-semibold text-sm"><?= htmlspecialchars($full_name) ?></span>
                     </button>
-
                     <div id="userDropdown" class="hidden absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border overflow-hidden z-50">
                         <div class="px-5 py-4 font-semibold text-gray-800 border-b">My Account</div>
-                        <a href="profile.php" class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition">
-                            <span>👤</span>
-                            <span class="text-gray-700">Profile Settings</span>
+                        <a href="profile.php" class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition text-sm text-gray-700">
+                            <span>👤</span> Profile Settings
                         </a>
-                        <a href="../auth/logout.php" class="flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-gray-100 transition">
-                            <span>↩️</span>
-                            <span>Log Out</span>
+                        <a href="../auth/logout.php" class="flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-gray-100 transition text-sm">
+                            <span>↩️</span> Log Out
                         </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <main class="flex-1 overflow-y-auto p-8 bg-[#f8fafc]">
-            <div class="flex items-start justify-between mb-6">
+        <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
+            <div class="flex items-end justify-between mb-8">
                 <div>
-                    <h2 class="text-[38px] font-bold text-gray-900 leading-tight">Event Calendar</h2>
-                    <p class="text-gray-500 mt-2 text-base">Schedule and coordinate SK events, meetings, and deadlines</p>
+                    <h2 class="text-4xl font-bold text-gray-900 leading-tight">Event Calendar</h2>
+                    <p class="text-gray-500 mt-2 text-lg">Schedule and coordinate SK events, meetings, and deadlines</p>
                 </div>
 
-                <button id="openEventModalBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm">
+                <button id="openEventModalBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition">
                     ＋ Add Event
                 </button>
             </div>
 
-            <div class="bg-white rounded-xl border border-gray-200 px-4 py-3 mb-5 flex flex-wrap gap-6 text-sm text-gray-700">
-                <?php foreach ($legendItems as [$color, $label]): ?>
-                    <div class="flex items-center gap-2">
-                        <span class="w-4 h-4 rounded <?= $color ?> inline-block"></span>
-                        <span><?= $label ?></span>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                    <div id="calendar"></div>
+                </div>
 
-            <div class="bg-white rounded-2xl border border-gray-200 p-4 mb-5">
-                <div id="calendar"></div>
-            </div>
-
-            <div class="space-y-3">
-                <?php if (empty($upcomingEvents)): ?>
-                    <div class="text-center text-gray-400 py-6">No upcoming events yet.</div>
-                <?php else: ?>
-                    <?php foreach ($upcomingEvents as $event): ?>
-                        <div class="flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3">
-                            <div class="flex items-start gap-3">
-                                <span class="w-2.5 h-2.5 mt-2 rounded-full <?= $typeColors[$event['event_type']] ?? 'bg-gray-500' ?>"></span>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-800"><?= htmlspecialchars($event['title']) ?></p>
-                                    <p class="text-xs text-gray-400"><?= htmlspecialchars($event['start_datetime']) ?></p>
+                <div class="space-y-6">
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Legend</h3>
+                        <div class="space-y-3">
+                            <?php foreach ($legendItems as [$color, $label]): ?>
+                                <div class="flex items-center gap-3">
+                                    <span class="w-3 h-3 rounded-full <?= $color ?>"></span>
+                                    <span class="text-xs font-bold text-gray-600"><?= $label ?></span>
                                 </div>
-                            </div>
-                            <span class="text-xs text-gray-500"><?= htmlspecialchars($event['event_type']) ?></span>
+                            <?php endforeach; ?>
                         </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
+                    </div>
 
-            <div id="eventModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 px-4">
-                <div class="bg-white w-full max-w-2xl rounded-[24px] shadow-2xl p-8 relative">
-                    <button id="closeEventModalBtn" class="absolute top-4 right-5 text-gray-500 hover:text-red-600 text-2xl font-bold">
-                        &times;
-                    </button>
-
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Add Event</h2>
-                    <p class="text-gray-600 mb-6 text-base">Create a calendar event for the SK calendar</p>
-
-                    <form action="" method="POST" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-900 mb-2">Event Title</label>
-                            <input type="text" name="event_title" class="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-400" required>
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Upcoming</h3>
+                        <div class="space-y-4">
+                            <?php if (empty($upcomingEvents)): ?>
+                                <p class="text-xs text-gray-400">No events found.</p>
+                            <?php else: ?>
+                                <?php foreach ($upcomingEvents as $event): ?>
+                                    <div class="group border-l-4 border-red-500 pl-3 py-1 hover:bg-gray-50 transition cursor-pointer">
+                                        <p class="text-[11px] font-black text-gray-800 uppercase leading-none"><?= htmlspecialchars($event['title']) ?></p>
+                                        <p class="text-[9px] text-gray-500 mt-1"><?= date('M d, Y', strtotime($event['start_datetime'])) ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-900 mb-2">Event Type</label>
-                            <select name="event_type" class="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-400">
-                                <option value="meeting">Meeting</option>
-                                <option value="deadline">Deadline</option>
-                                <option value="program">Program</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-900 mb-2">Description</label>
-                            <textarea name="description" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-400"></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-900 mb-2">Start Date</label>
-                                <input type="date" name="start_datetime" class="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-900 mb-2">End Date</label>
-                                <input type="date" name="end_datetime" class="w-full h-12 px-4 rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-400">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-3 rounded-2xl transition">
-                            Save Event
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </main>
+    </div>
+</div>
+
+<div id="eventModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[100] px-4 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-lg rounded-[30px] shadow-2xl p-8 relative animate-in fade-in zoom-in duration-300">
+        <button id="closeEventModalBtn" class="absolute top-6 right-6 text-gray-400 hover:text-red-600 text-2xl transition">&times;</button>
+        
+        <h2 class="text-2xl font-black text-gray-900 uppercase mb-1">New Event</h2>
+        <p class="text-gray-500 text-xs mb-6">Fill in the details to create a new activity.</p>
+
+        <form action="" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1 tracking-widest">Event Title</label>
+                <input type="text" name="event_title" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-400 outline-none transition text-sm" required>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1 tracking-widest">Type</label>
+                <select name="event_type" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none text-sm focus:bg-white transition">
+                    <option value="meeting">Meeting</option>
+                    <option value="program">Program</option>
+                    <option value="deadline">Deadline</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1 tracking-widest">Start Date</label>
+                    <input type="date" name="start_datetime" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none text-sm focus:bg-white transition" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1 tracking-widest">End Date</label>
+                    <input type="date" name="end_datetime" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none text-sm focus:bg-white transition" required>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1 tracking-widest">Description</label>
+                <textarea name="description" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none text-sm focus:bg-white transition"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-2xl shadow-lg transition uppercase tracking-widest mt-4 text-xs">
+                Publish to Calendar
+            </button>
+        </form>
     </div>
 </div>
 
@@ -292,79 +256,44 @@ $legendItems = [
     const closeEventModalBtn = document.getElementById('closeEventModalBtn');
     const eventModal = document.getElementById('eventModal');
 
-    const toggleMenu = (btn, menu, other) => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            menu.classList.toggle('hidden');
-            other.classList.add('hidden');
-        });
-    };
-
-    toggleMenu(notifBtn, notifDropdown, userDropdown);
-    toggleMenu(userMenuBtn, userDropdown, notifDropdown);
-
-    document.addEventListener('click', e => {
+    notifBtn.onclick = (e) => { e.stopPropagation(); notifDropdown.classList.toggle('hidden'); userDropdown.classList.add('hidden'); };
+    userMenuBtn.onclick = (e) => { e.stopPropagation(); userDropdown.classList.toggle('hidden'); notifDropdown.classList.add('hidden'); };
+    
+    document.onclick = (e) => {
         if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) notifDropdown.classList.add('hidden');
         if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) userDropdown.classList.add('hidden');
-    });
-
-    const showEventModal = () => {
-        eventModal.classList.remove('hidden');
-        eventModal.classList.add('flex');
     };
 
-    const hideEventModal = () => {
-        eventModal.classList.add('hidden');
-        eventModal.classList.remove('flex');
-    };
-
-    openEventModalBtn.addEventListener('click', showEventModal);
-    closeEventModalBtn.addEventListener('click', hideEventModal);
-
-    eventModal.addEventListener('click', e => {
-        if (e.target === eventModal) hideEventModal();
-    });
-
-    const deleteItem = (id, type, title, text) => {
-        Swal.fire({
-            title,
-            text,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            confirmButtonText: 'Delete'
-        }).then(result => {
-            if (result.isConfirmed) {
-                fetch('delete_slot.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'id=' + id + '&type=' + type
-                })
-                .then(res => res.text())
-                .then(() => location.reload());
-            }
-        });
-    };
+    openEventModalBtn.onclick = () => { eventModal.classList.remove('hidden'); eventModal.classList.add('flex'); };
+    closeEventModalBtn.onclick = () => { eventModal.classList.add('hidden'); eventModal.classList.remove('flex'); };
 
     document.addEventListener('DOMContentLoaded', () => {
         const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
             initialView: 'dayGridMonth',
             height: 'auto',
-            headerToolbar: {
-                left: 'title',
-                center: '',
-                right: 'prev,next'
-            },
+            headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
             events: <?= json_encode($calendarEvents) ?>,
-            eventClick: info => deleteItem(info.event.id, 'event', 'Delete Event?', info.event.title)
+            eventClick: info => {
+                Swal.fire({
+                    title: 'Delete Event?',
+                    text: `Are you sure you want to remove "${info.event.title}"?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    confirmButtonText: 'Delete'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        fetch('delete_slot.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'id=' + info.event.id + '&type=event'
+                        }).then(() => location.reload());
+                    }
+                });
+            }
         });
-
         calendar.render();
     });
-
-    function deleteSlot(id) {
-        deleteItem(id, 'slot', 'Delete Slot?', 'This will be permanently removed.');
-    }
 </script>
 
 </body>

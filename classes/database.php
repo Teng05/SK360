@@ -112,7 +112,8 @@ class Database {
 
     public function getUserById($user_id) {
         $conn = $this->openConnection();
-        $stmt = $conn->prepare("SELECT user_id, first_name, last_name, role FROM users WHERE user_id = ? LIMIT 1");
+        // Idagdag ang barangay_id sa SELECT statement
+        $stmt = $conn->prepare("SELECT user_id, first_name, last_name, email, phone_number, role, barangay_id FROM users WHERE user_id = ? LIMIT 1");
         $stmt->execute([$user_id]);
         return $stmt->fetch();
     }
@@ -183,17 +184,16 @@ class Database {
     // GET UPCOMING EVENTS
     public function getUpcomingEvents($limit = 5) {
         $conn = $this->openConnection();
-
-        $stmt = $conn->prepare("
-            SELECT event_id, title, event_type, start_datetime, end_datetime, description
-            FROM events
-            WHERE DATE(start_datetime) >= CURDATE()
-            ORDER BY start_datetime ASC
-            LIMIT ?
-        ");
-        $stmt->bindValue(1, (int)$limit, PDO::PARAM_INT);
+        
+        // 1. I-prepare ang SQL query gamit ang named placeholder (:limit)
+        $stmt = $conn->prepare("SELECT * FROM events WHERE end_datetime >= NOW() ORDER BY start_datetime ASC LIMIT :limit");
+        
+        // 2. I-bind ang value at siguraduhing PDO::PARAM_INT ang gamit
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        
+        // 3. I-execute nang walang array sa loob
         $stmt->execute();
-
+        
         return $stmt->fetchAll();
     }
 
@@ -343,5 +343,94 @@ class Database {
         
         return false;
     }
-    
+
+    // Kunin ang lahat ng events para sa calendar view
+    public function getAllEvents() {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("SELECT * FROM events ORDER BY start_datetime ASC");
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function getCouncilByBarangay($barangay_id) {
+        $conn = $this->openConnection();
+        try {
+            $sql = "
+                /* Part 1: Kunin ang Chairman at Secretary mula sa users table */
+                SELECT 
+                    CONCAT(first_name, ' ', last_name) AS name, 
+                    CASE 
+                        WHEN role = 'sk_chairman' THEN 'SK Chairman'
+                        WHEN role = 'sk_secretary' THEN 'SK Secretary'
+                    END AS position, 
+                    email, 
+                    phone_number AS phone, 
+                    '2024-2026' AS term 
+                FROM users 
+                WHERE barangay_id = :bid AND role IN ('sk_chairman', 'sk_secretary')
+                
+                UNION ALL
+                
+                /* Part 2: Kunin ang Treasurer at Councilors mula sa sk_council table */
+                SELECT name, position, email, phone, term 
+                FROM sk_council 
+                WHERE barangay_id = :bid
+                
+                ORDER BY 
+                    CASE 
+                        WHEN position = 'SK Chairman' THEN 1
+                        WHEN position = 'SK Secretary' THEN 2
+                        WHEN position = 'SK Treasurer' THEN 3
+                        ELSE 4 
+                    END ASC, name ASC";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':bid', $barangay_id, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Error in getCouncilByBarangay: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // 2. Kunin ang pangalan ng Barangay para sa header ng page
+    public function getBarangayName($barangay_id) {
+        $conn = $this->openConnection();
+        try {
+            // Tandaan: Siguraduhin na 'barangay_id' ang column name sa table mo
+            $stmt = $conn->prepare("SELECT barangay_name FROM barangays WHERE barangay_id = ?");
+            $stmt->execute([$barangay_id]);
+            $res = $stmt->fetch();
+            return $res ? $res['barangay_name'] : 'Unknown Barangay';
+        } catch (PDOException $e) {
+            return 'Unknown Barangay';
+        }
+    }
+
+    // Update user profile information
+    public function updateUserProfile($user_id, $first_name, $last_name, $email, $phone_number) {
+        $conn = $this->openConnection();
+        $stmt = $conn->prepare("
+            UPDATE users 
+            SET first_name = ?, last_name = ?, email = ?, phone_number = ? 
+            WHERE user_id = ?
+        ");
+        return $stmt->execute([$first_name, $last_name, $email, $phone_number, $user_id]);
+    }
+
+    public function updateProfilePic($user_id, $filename) {
+        try {
+            $query = "UPDATE users SET profile_pic = :profile_pic WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':profile_pic', $filename);
+            $stmt->bindParam(':id', $user_id);
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Update Profile Pic Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
 }
