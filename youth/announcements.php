@@ -21,8 +21,8 @@ if (!$user_data) {
 $user_name = $user_data['first_name'] . ' ' . $user_data['last_name'];
 
 // 2. Fetch All Announcements
-// (Make sure getAllAnnouncements() is in your database.php file as discussed!)
-$announcements = $db->getAllAnnouncements(); 
+// (Make sure getAnnouncements() is in your database.php file as discussed!)
+$announcements = $db->getAnnouncements('youth'); 
 ?>
 
 <!DOCTYPE html>
