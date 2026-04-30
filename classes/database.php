@@ -305,7 +305,6 @@ class Database {
         return $stmt->execute([$hashed_password, $user_id]);
     }
 
-    // Inside classes/database.php
 
     public function getUserByEmail($email) {
         $conn = $this->openConnection();
