@@ -215,25 +215,37 @@ class Database {
         return $stmt->fetch();
     }
 
-    // 3. Fetch Barangay Rank from your rankings table
-    public function getBarangayRank($barangay_id) {
-        $conn = $this->openConnection();
-        $stmt = $conn->prepare("SELECT ranking_id FROM rankings WHERE barangay_id = ? ORDER BY created_at DESC LIMIT 1");
-        $stmt->execute([$barangay_id]);
-        $rank = $stmt->fetch();
-        return $rank ? "#" . $rank['ranking_id'] : "N/A";
-    }
 
-    public function getAllAnnouncements() {
+    public function getBarangayRank() {
         try {
-            // We fetch the latest announcements first using ORDER BY created_at DESC
-            $sql = "SELECT * FROM announcements ORDER BY created_at DESC";
+            // Pinalitan ang b.id ng b.barangay_id base sa iyong schema
+            $sql = "SELECT r.*, b.barangay_name 
+                    FROM rankings r
+                    JOIN barangays b ON r.barangay_id = b.barangay_id
+                    ORDER BY r.total_points DESC";
+            
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            // If there's an error, return an empty array so the page doesn't crash
+            die("Rankings Error: " . $e->getMessage());
+        }
+    }
+
+    public function getAnnouncements($role = 'youth') {
+        try {
+            if ($role === 'sk_chairman' || $role === 'sk_secretary') {
+                // Nakikita lahat (Public + Internal)
+                $sql = "SELECT * FROM announcements ORDER BY created_at DESC";
+            } else {
+                // Youth: Nakikita lang ang Public
+                $sql = "SELECT * FROM announcements WHERE visibility = 'public' ORDER BY created_at DESC";
+            }
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
             return [];
         }
     }
@@ -355,8 +367,9 @@ class Database {
         $conn = $this->openConnection();
         try {
             $sql = "
-                /* Part 1: Kunin ang Chairman at Secretary mula sa users table */
+                /* Part 1: Chairman/Secretary mula sa users table */
                 SELECT 
+                    user_id AS id, 
                     CONCAT(first_name, ' ', last_name) AS name, 
                     CASE 
                         WHEN role = 'sk_chairman' THEN 'SK Chairman'
@@ -370,8 +383,14 @@ class Database {
                 
                 UNION ALL
                 
-                /* Part 2: Kunin ang Treasurer at Councilors mula sa sk_council table */
-                SELECT name, position, email, phone, term 
+                /* Part 2: sk_council Table */
+                SELECT 
+                    council_id AS id, -- Dito natin binabago ang name para mag-match sa Part 1
+                    name, 
+                    position, 
+                    email, 
+                    phone, 
+                    term 
                 FROM sk_council 
                 WHERE barangay_id = :bid
                 
@@ -386,9 +405,8 @@ class Database {
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':bid', $barangay_id, PDO::PARAM_INT);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Error in getCouncilByBarangay: " . $e->getMessage());
             return [];
         }
     }
@@ -430,6 +448,67 @@ class Database {
             error_log("Update Profile Pic Error: " . $e->getMessage());
             return false;
         }
+    }
+
+    public function addCouncilMember($barangay_id, $name, $email, $phone, $position, $term) {
+        try {
+            $conn = $this->openConnection();
+            $sql = "INSERT INTO sk_council (barangay_id, name, email, phone, position, term) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            return $stmt->execute([$barangay_id, $name, $email, $phone, $position, $term]);
+        } catch (PDOException $e) {
+            error_log("Add Member Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteCouncilMember($council_id, $barangay_id) {
+        try {
+            $conn = $this->openConnection();
+            // Siguraduhin na 'sk_council' lang ang binubura
+            $sql = "DELETE FROM sk_council WHERE council_id = ? AND barangay_id = ?";
+            $stmt = $conn->prepare($sql);
+            return $stmt->execute([$council_id, $barangay_id]);
+        } catch (PDOException $e) {
+            error_log("Delete Member Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getReportsByBarangay($barangay_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM reports WHERE barangay_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$barangay_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function handleReportUpload($barangay_id, $title, $file = null, $method = 'template') {
+        if ($method === 'pdf' && $file) {
+            // 1. Define the absolute path to the uploads folder
+            // __DIR__ points to C:\xampp\htdocs\SK360\classes
+            $targetDir = __DIR__ . "/../uploads/reports/";
+
+            // 2. Create the folder if it doesn't exist
+            if (!is_dir($targetDir)) {
+                // 0777 gives full read/write permissions
+                mkdir($targetDir, 0777, true);
+            }
+
+            $newName = "REP_" . time() . "_" . $barangay_id . ".pdf";
+            $destination = $targetDir . $newName;
+
+            // 3. Move the file
+            if (move_uploaded_file($file['tmp_name'], $destination)) {
+                $filePath = $newName;
+            } else {
+                return false; // Failed to move
+            }
+        } else {
+            $filePath = "SYSTEM_GEN";
+        }
+
+        // 4. Insert into Database
+        $stmt = $this->conn->prepare("INSERT INTO reports (barangay_id, title, method, file_path, status, created_at) VALUES (?, ?, ?, ?, 'Pending', NOW())");
+        return $stmt->execute([$barangay_id, $title, $method, $filePath]);
     }
 
 }
